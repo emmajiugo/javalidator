@@ -17,8 +17,8 @@ but you can easily add your own custom rules to validate domain-specific require
 Here's a complete example of creating a custom phone number validator:
 
 ```java
-import me.emmajiugo.javalidator.ValidationRule;
-import me.emmajiugo.javalidator.RuleRegistry;
+import io.github.emmajiugo.javalidator.ValidationRule;
+import io.github.emmajiugo.javalidator.RuleRegistry;
 
 // 1. Implement ValidationRule interface
 public class PhoneRule implements ValidationRule {
@@ -66,7 +66,7 @@ Implement the `ValidationRule` interface:
 ```java
 package com.example.validation.rules;
 
-import me.emmajiugo.javalidator.ValidationRule;
+import io.github.emmajiugo.javalidator.ValidationRule;
 
 public class CreditCardRule implements ValidationRule {
 
@@ -428,7 +428,7 @@ For cleaner controller code, use `validateOrThrow()` which throws a `ValidationE
 package com.example.myapp.controller;
 
 import com.example.myapp.dto.CreateMemberRequest;
-import me.emmajiugo.javalidator.Validator;
+import io.github.emmajiugo.javalidator.Validator;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -451,7 +451,7 @@ Then handle the exception globally with `@RestControllerAdvice`:
 ```java
 package com.example.myapp.exception;
 
-import me.emmajiugo.javalidator.ValidationException;
+import io.github.emmajiugo.javalidator.ValidationException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;

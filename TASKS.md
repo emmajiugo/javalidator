@@ -11,7 +11,7 @@
 ### 2. Claim and Verify Namespace
 - [ ] Navigate to "Namespaces" in Central Portal
 - [ ] Click "Add Namespace"
-- [ ] Enter: `me.emmajiugo`
+- [ ] Enter: `io.github.emmajiugo`
 - [ ] Select verification method:
   - **Recommended**: GitHub verification (easier)
     - Select "GitHub" as verification method
@@ -64,13 +64,13 @@ gpg --armor --export-secret-keys YOUR_KEY_ID
 # Copy the ENTIRE output including the BEGIN and END lines
 
 # Publish your public key to key server
-gpg --keyserver keyserver.ubuntu.com --send-keys YOUR_KEY_ID
+gpg --keyserver keys.openpgp.org --send-keys YOUR_KEY_ID
 ```
 
 - [ ] Run: `gpg --armor --export-secret-keys YOUR_KEY_ID`
 - [ ] Copy the ENTIRE output (you'll paste this into GitHub Secrets)
-- [ ] Run: `gpg --keyserver keyserver.ubuntu.com --send-keys YOUR_KEY_ID`
-- [ ] Verify key is published (wait a few minutes, then search on keyserver.ubuntu.com)
+- [ ] Run: `gpg --keyserver keys.openpgp.org --send-keys  YOUR_KEY_ID`
+- [ ] Verify key is published (wait a few minutes, then search on keys.openpgp.org)
 
 ### 6. Configure GitHub Secrets
 - [ ] Go to: https://github.com/emmajiugo/javalidator
@@ -200,7 +200,7 @@ echo "test" | gpg --clearsign
 ### Verification After Publishing
 1. Wait 30-60 minutes for Maven Central sync
 2. Check: https://search.maven.org/
-3. Search for: `g:me.emmajiugo a:javalidator-core`
+3. Search for: `g:io.github.emmajiugo a:javalidator-core`
 4. Verify your version appears
 5. Check direct URL: https://repo1.maven.org/maven2/me/emmajiugo/javalidator-core/
 
@@ -227,7 +227,7 @@ echo "test" | gpg --clearsign
 - Check namespace is verified in Central Portal
 
 ### Issue: Namespace not verified
-**Error**: `Namespace 'me.emmajiugo' is not verified`
+**Error**: `Namespace 'io.github.emmajiugo' is not verified`
 
 **Solutions**:
 - Complete namespace verification in Central Portal

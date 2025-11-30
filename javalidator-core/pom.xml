@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>me.emmajiugo</groupId>
+        <groupId>io.github.emmajiugo</groupId>
         <artifactId>javalidator</artifactId>
         <version>1.0.0</version>
     </parent>

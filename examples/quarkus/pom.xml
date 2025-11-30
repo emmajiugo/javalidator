@@ -4,7 +4,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>me.emmajiugo.javalidator.examples</groupId>
+    <groupId>io.github.emmajiugo.javalidator.examples</groupId>
     <artifactId>quarkus-example</artifactId>
     <version>1.0.0</version>
 
@@ -42,7 +42,7 @@
         </dependency>
 
         <dependency>
-            <groupId>me.emmajiugo</groupId>
+            <groupId>io.github.emmajiugo</groupId>
             <artifactId>javalidator-core</artifactId>
             <version>1.0.0</version>
         </dependency>

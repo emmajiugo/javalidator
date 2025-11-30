@@ -10,7 +10,7 @@
         <version>3.5.8</version>
     </parent>
 
-    <groupId>me.emmajiugo.javalidator.examples</groupId>
+    <groupId>io.github.emmajiugo.javalidator.examples</groupId>
     <artifactId>spring-boot-example</artifactId>
     <version>1.0.0</version>
 
@@ -35,7 +35,7 @@
         </dependency>
 
         <dependency>
-            <groupId>me.emmajiugo</groupId>
+            <groupId>io.github.emmajiugo</groupId>
             <artifactId>javalidator-core</artifactId>
             <version>1.0.0</version>
         </dependency>

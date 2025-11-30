@@ -19,7 +19,7 @@ Add Javalidator to your project:
 
 ```xml
 <dependency>
-    <groupId>me.emmajiugo</groupId>
+    <groupId>io.github.emmajiugo</groupId>
     <artifactId>javalidator-core</artifactId>
     <version>1.0.0</version>
 </dependency>
@@ -28,7 +28,7 @@ Add Javalidator to your project:
 ### Gradle
 
 ```groovy
-implementation 'me.emmajiugo:javalidator-core:1.0.0'
+implementation 'io.github.emmajiugo:javalidator-core:1.0.0'
 ```
 
 ## Basic Usage
@@ -38,7 +38,7 @@ implementation 'me.emmajiugo:javalidator-core:1.0.0'
 ```java
 package com.example.dto;
 
-import me.emmajiugo.javalidator.annotations.Rule;
+import io.github.emmajiugo.javalidator.annotations.Rule;
 
 public record UserDTO(
     @Rule(value = "required", message = "Username is required")
@@ -58,8 +58,8 @@ public record UserDTO(
 ### 2. Validate Manually
 
 ```java
-import me.emmajiugo.javalidator.Validator;
-import me.emmajiugo.javalidator.model.ValidationResponse;
+import io.github.emmajiugo.javalidator.Validator;
+import io.github.emmajiugo.javalidator.model.ValidationResponse;
 
 public class Main {
     public static void main(String[] args) {
@@ -109,8 +109,8 @@ import jakarta.servlet.*;
 import jakarta.servlet.annotation.WebFilter;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import me.emmajiugo.javalidator.Validator;
-import me.emmajiugo.javalidator.model.ValidationResponse;
+import io.github.emmajiugo.javalidator.Validator;
+import io.github.emmajiugo.javalidator.model.ValidationResponse;
 
 import java.io.IOException;
 
@@ -178,8 +178,8 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import me.emmajiugo.javalidator.Validator;
-import me.emmajiugo.javalidator.model.ValidationResponse;
+import io.github.emmajiugo.javalidator.Validator;
+import io.github.emmajiugo.javalidator.model.ValidationResponse;
 
 import java.io.IOException;
 
@@ -234,8 +234,8 @@ public class UserServlet extends HttpServlet {
 package com.example.cli;
 
 import com.example.dto.UserDTO;
-import me.emmajiugo.javalidator.Validator;
-import me.emmajiugo.javalidator.model.ValidationResponse;
+import io.github.emmajiugo.javalidator.Validator;
+import io.github.emmajiugo.javalidator.model.ValidationResponse;
 
 import java.util.Scanner;
 
@@ -291,8 +291,8 @@ public class UserRegistrationCLI {
 package com.example.batch;
 
 import com.example.dto.UserDTO;
-import me.emmajiugo.javalidator.Validator;
-import me.emmajiugo.javalidator.model.ValidationResponse;
+import io.github.emmajiugo.javalidator.Validator;
+import io.github.emmajiugo.javalidator.model.ValidationResponse;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -355,9 +355,9 @@ For plain Java applications without frameworks:
 package com.example.service;
 
 import com.example.dto.UserDTO;
-import me.emmajiugo.javalidator.Validator;
-import me.emmajiugo.javalidator.exception.ValidationException;
-import me.emmajiugo.javalidator.model.ValidationResponse;
+import io.github.emmajiugo.javalidator.Validator;
+import io.github.emmajiugo.javalidator.exception.ValidationException;
+import io.github.emmajiugo.javalidator.model.ValidationResponse;
 
 public class UserService {
 
@@ -414,9 +414,9 @@ Create a validation utility:
 ```java
 package com.example.util;
 
-import me.emmajiugo.javalidator.Validator;
-import me.emmajiugo.javalidator.exception.ValidationException;
-import me.emmajiugo.javalidator.model.ValidationResponse;
+import io.github.emmajiugo.javalidator.Validator;
+import io.github.emmajiugo.javalidator.exception.ValidationException;
+import io.github.emmajiugo.javalidator.model.ValidationResponse;
 
 public class ValidationUtils {
 
@@ -476,7 +476,7 @@ Use in tests to validate test data:
 package com.example.test;
 
 import com.example.dto.UserDTO;
-import me.emmajiugo.javalidator.Validator;
+import io.github.emmajiugo.javalidator.Validator;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -520,8 +520,8 @@ Extend Javalidator with your own rules:
 ```java
 package com.example.validation;
 
-import me.emmajiugo.javalidator.ValidationRule;
-import me.emmajiugo.javalidator.RuleRegistry;
+import io.github.emmajiugo.javalidator.ValidationRule;
+import io.github.emmajiugo.javalidator.RuleRegistry;
 
 public class PhoneRule implements ValidationRule {
 

@@ -38,7 +38,7 @@ A framework-agnostic Java validation library with Laravel-style syntax, inspired
 
 ```xml
 <dependency>
-    <groupId>me.emmajiugo</groupId>
+    <groupId>io.github.emmajiugo</groupId>
     <artifactId>javalidator-core</artifactId>
     <version>1.0.0</version>
 </dependency>
@@ -47,7 +47,7 @@ A framework-agnostic Java validation library with Laravel-style syntax, inspired
 ### Gradle
 
 ```groovy
-implementation 'me.emmajiugo:javalidator-core:1.0.0'
+implementation 'io.github.emmajiugo:javalidator-core:1.0.0'
 ```
 
 ## Quick Start
@@ -55,9 +55,9 @@ implementation 'me.emmajiugo:javalidator-core:1.0.0'
 ### Using Java Records
 
 ```java
-import me.emmajiugo.javalidator.annotations.Rule;
-import me.emmajiugo.javalidator.Validator;
-import me.emmajiugo.javalidator.model.ValidationResponse;
+import io.github.emmajiugo.javalidator.annotations.Rule;
+import io.github.emmajiugo.javalidator.Validator;
+import io.github.emmajiugo.javalidator.model.ValidationResponse;
 
 public record UserDTO(
     @Rule("required|min:3|max:20")
@@ -145,7 +145,7 @@ public record UserDTO(
 ### Using ValidationException
 
 ```java
-import me.emmajiugo.javalidator.exception.ValidationException;
+import io.github.emmajiugo.javalidator.exception.ValidationException;
 
 public class UserService {
     public void createUser(UserDTO dto) {
@@ -260,7 +260,7 @@ try {
 Validate nested objects and collections using `@RuleCascade`:
 
 ```java
-import me.emmajiugo.javalidator.annotations.RuleCascade;
+import io.github.emmajiugo.javalidator.annotations.RuleCascade;
 
 public record Address(
     @Rule("required")
@@ -377,8 +377,8 @@ Javalidator is designed with security in mind, providing several protections aga
 Configure security settings using `ValidationConfig`:
 
 ```java
-import me.emmajiugo.javalidator.config.ValidationConfig;
-import me.emmajiugo.javalidator.Validator;
+import io.github.emmajiugo.javalidator.config.ValidationConfig;
+import io.github.emmajiugo.javalidator.Validator;
 
 // Use strict security preset
 ValidationConfig config = ValidationConfig.strict();

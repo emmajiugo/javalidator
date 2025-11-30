@@ -5,7 +5,7 @@
 ### 1. Create Maven Central Account
 - Go to https://central.sonatype.com/
 - Sign up and verify email
-- Claim namespace: `me.emmajiugo`
+- Claim namespace: `io.github.emmajiugo`
 
 ### 2. Generate GPG Key
 ```bash
@@ -107,7 +107,7 @@ git push origin main
 After publishing (wait 30-60 minutes):
 
 1. Check: https://search.maven.org/
-2. Search for: `me.emmajiugo javalidator-core`
+2. Search for: `io.github.emmajiugo javalidator-core`
 3. Verify your version appears
 
 ---

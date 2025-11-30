@@ -416,7 +416,7 @@ Validates nested objects and collections recursively. When applied to a field, t
 **Examples:**
 
 ```java
-import me.emmajiugo.javalidator.annotations.RuleCascade;
+import io.github.emmajiugo.javalidator.annotations.RuleCascade;
 
 // Nested record validation
 public record Address(

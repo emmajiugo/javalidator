@@ -17,7 +17,7 @@ Add these dependencies to your `pom.xml`:
 ```xml
 <!-- Javalidator Core -->
 <dependency>
-    <groupId>me.emmajiugo</groupId>
+    <groupId>io.github.emmajiugo</groupId>
     <artifactId>javalidator-core</artifactId>
     <version>1.0.0</version>
 </dependency>
@@ -42,10 +42,10 @@ Create an AOP aspect to intercept REST controller methods and validate parameter
 ```java
 package com.example.validation;
 
-import me.emmajiugo.javalidator.Validator;
-import me.emmajiugo.javalidator.annotations.Validate;
-import me.emmajiugo.javalidator.exception.ValidationException;
-import me.emmajiugo.javalidator.model.ValidationResponse;
+import io.github.emmajiugo.javalidator.Validator;
+import io.github.emmajiugo.javalidator.annotations.Validate;
+import io.github.emmajiugo.javalidator.exception.ValidationException;
+import io.github.emmajiugo.javalidator.model.ValidationResponse;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
@@ -111,8 +111,8 @@ Create a global exception handler to return consistent error responses:
 ```java
 package com.example.validation;
 
-import me.emmajiugo.javalidator.exception.ValidationException;
-import me.emmajiugo.javalidator.model.ValidationError;
+import io.github.emmajiugo.javalidator.exception.ValidationException;
+import io.github.emmajiugo.javalidator.model.ValidationError;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -160,7 +160,7 @@ Now you can use `@Validate` from javalidator-core to automatically validate requ
 package com.example.controller;
 
 import com.example.dto.UserDTO;
-import me.emmajiugo.javalidator.annotations.Validate;
+import io.github.emmajiugo.javalidator.annotations.Validate;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -196,7 +196,7 @@ Define your DTO with Javalidator annotations:
 ```java
 package com.example.dto;
 
-import me.emmajiugo.javalidator.annotations.Rule;
+import io.github.emmajiugo.javalidator.annotations.Rule;
 
 public record UserDTO(
     @Rule(value = "required", message = "Username is required")

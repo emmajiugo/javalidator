@@ -17,7 +17,7 @@ Add Javalidator to your `pom.xml`:
 ```xml
 <!-- Javalidator Core -->
 <dependency>
-    <groupId>me.emmajiugo</groupId>
+    <groupId>io.github.emmajiugo</groupId>
     <artifactId>javalidator-core</artifactId>
     <version>1.0.0</version>
 </dependency>
@@ -63,9 +63,9 @@ package com.example.validation;
 import jakarta.interceptor.AroundInvoke;
 import jakarta.interceptor.Interceptor;
 import jakarta.interceptor.InvocationContext;
-import me.emmajiugo.javalidator.Validator;
-import me.emmajiugo.javalidator.exception.ValidationException;
-import me.emmajiugo.javalidator.model.ValidationResponse;
+import io.github.emmajiugo.javalidator.Validator;
+import io.github.emmajiugo.javalidator.exception.ValidationException;
+import io.github.emmajiugo.javalidator.model.ValidationResponse;
 
 import java.io.Serializable;
 
@@ -146,8 +146,8 @@ package com.example.validation;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.ext.ExceptionMapper;
 import jakarta.ws.rs.ext.Provider;
-import me.emmajiugo.javalidator.exception.ValidationException;
-import me.emmajiugo.javalidator.model.ValidationError;
+import io.github.emmajiugo.javalidator.exception.ValidationException;
+import io.github.emmajiugo.javalidator.model.ValidationError;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -275,7 +275,7 @@ Define your DTO with Javalidator annotations:
 ```java
 package com.example.dto;
 
-import me.emmajiugo.javalidator.annotations.Rule;
+import io.github.emmajiugo.javalidator.annotations.Rule;
 
 public record UserDTO(
     @Rule(value = "required", message = "Username is required")

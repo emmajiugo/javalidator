@@ -37,7 +37,7 @@ Before you can publish to Maven Central, ensure you have:
 
 1. Log into the Central Portal
 2. Navigate to "Namespaces"
-3. Add your namespace: `me.emmajiugo`
+3. Add your namespace: `io.github.emmajiugo`
 4. Verify ownership:
    - **Option A (Recommended)**: Add a GitHub repository verification
      - Select "GitHub" as verification method
@@ -353,7 +353,7 @@ After publishing, verify your artifact:
 
 3. **Search Maven Central:**
    - Visit: [search.maven.org](https://search.maven.org/)
-   - Search for: `g:me.emmajiugo a:javalidator-core`
+   - Search for: `g:io.github.emmajiugo a:javalidator-core`
 
 4. **Test installation:**
    ```bash
