@@ -5,7 +5,6 @@ import me.emmajiugo.javalidator.config.ValidationConfig;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.RecordComponent;
-import java.lang.reflect.ReflectPermission;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,29 +17,12 @@ import java.util.List;
  * <p><b>Security:</b> This class respects ValidationConfig settings:
  * <ul>
  *   <li>maxClassHierarchyDepth - Limits traversal depth to prevent memory exhaustion
- *   <li>strictReflectionMode - Checks SecurityManager permissions before setAccessible()
  * </ul>
  */
 public final class ReflectionUtils {
 
     private ReflectionUtils() {
         // Private constructor to prevent instantiation
-    }
-
-    /**
-     * Checks SecurityManager permissions if strictReflectionMode is enabled.
-     * Called before setAccessible(true) operations.
-     *
-     * @throws SecurityException if permission is denied
-     */
-    private static void checkReflectionPermission() {
-        ValidationConfig config = Validator.getConfig();
-        if (config.isStrictReflectionMode()) {
-            SecurityManager sm = System.getSecurityManager();
-            if (sm != null) {
-                sm.checkPermission(new ReflectPermission("suppressAccessChecks"));
-            }
-        }
     }
 
     /**
@@ -85,7 +67,6 @@ public final class ReflectionUtils {
                 for (RecordComponent component : clazz.getRecordComponents()) {
                     if (component.getName().equals(fieldName)) {
                         var accessor = component.getAccessor();
-                        checkReflectionPermission();
                         accessor.setAccessible(true);
                         return accessor.invoke(dto);
                     }
@@ -94,7 +75,6 @@ public final class ReflectionUtils {
                 // Try regular field
                 Field field = findField(clazz, fieldName);
                 if (field != null) {
-                    checkReflectionPermission();
                     field.setAccessible(true);
                     return field.get(dto);
                 }
@@ -118,7 +98,6 @@ public final class ReflectionUtils {
     public static Object getRecordComponentValue(Object dto, RecordComponent component) {
         try {
             var accessor = component.getAccessor();
-            checkReflectionPermission();
             accessor.setAccessible(true);
             return accessor.invoke(dto);
         } catch (Exception e) {

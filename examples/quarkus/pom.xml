@@ -16,6 +16,7 @@
         <maven.deploy.skip>true</maven.deploy.skip>
         <maven.install.skip>false</maven.install.skip>
         <gpg.skip>true</gpg.skip>
+        <javalidator.version>0.1.1-SNAPSHOT</javalidator.version>
     </properties>
 
     <dependencyManagement>
@@ -44,7 +45,7 @@
         <dependency>
             <groupId>io.github.emmajiugo</groupId>
             <artifactId>javalidator-core</artifactId>
-            <version>1.0.0</version>
+            <version>${javalidator.version}</version>
         </dependency>
     </dependencies>
 

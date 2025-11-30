@@ -366,11 +366,6 @@ Javalidator is designed with security in mind, providing several protections aga
    - Prevents memory exhaustion via deeply nested class hierarchies
    - Default limit: 10 levels
 
-5. **SecurityManager Integration**
-   - Optional strict reflection mode checks SecurityManager permissions
-   - Allows integration with Java security policies
-   - Disabled by default for compatibility
-
 ### Security Configuration
 
 Configure security settings using `ValidationConfig`:
@@ -386,10 +381,8 @@ Validator.setConfig(config);
 // Or customize security settings
 ValidationConfig custom = ValidationConfig.builder()
     .maxClassHierarchyDepth(10)           // Limit inheritance traversal
-    .strictReflectionMode(true)           // Check SecurityManager permissions
     .validateFieldNames(true)             // Validate field names in conditional rules
     .fieldNamePattern("^[a-zA-Z_][a-zA-Z0-9_]*$")  // Pattern for valid field names
-    .strictSecurityMode(true)             // Enable all security features
     .build();
 Validator.setConfig(custom);
 ```
@@ -414,7 +407,6 @@ Validator.setConfig(custom);
 - Arbitrary class loading via enum validation
 - Field name injection in conditional rules
 - Memory exhaustion via unbounded reflection
-- Unauthorized reflection access (when SecurityManager is present)
 
 **Not Applicable:**
 - ReDoS (developers control regex patterns at compile-time)

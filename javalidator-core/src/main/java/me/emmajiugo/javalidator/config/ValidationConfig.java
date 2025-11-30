@@ -10,8 +10,6 @@ package me.emmajiugo.javalidator.config;
  * <ul>
  *   <li><b>Max Class Hierarchy Depth</b> - Limits how deep reflection traverses inheritance
  *       hierarchies to prevent memory exhaustion attacks via deeply nested classes</li>
- *   <li><b>Strict Reflection Mode</b> - Checks SecurityManager permissions before using
- *       setAccessible(), allowing integration with Java security policies</li>
  *   <li><b>Field Name Validation</b> - Validates field names in conditional rules (required_if,
  *       required_unless, same, different) against a regex pattern to prevent field name injection</li>
  *   <li><b>Type-Safe Enum Validation</b> - Enum validation requires compile-time Class<?> parameter,
@@ -37,7 +35,6 @@ package me.emmajiugo.javalidator.config;
  * // Or customize settings
  * ValidationConfig custom = ValidationConfig.builder()
  *     .maxClassHierarchyDepth(10)
- *     .strictReflectionMode(true)
  *     .validateFieldNames(true)
  *     .fieldNamePattern("^[a-zA-Z_][a-zA-Z0-9_]*$")
  *     .build();
@@ -49,21 +46,15 @@ public class ValidationConfig {
 
     // Reflection security settings
     private final int maxClassHierarchyDepth;
-    private final boolean strictReflectionMode;
 
     // Field name validation
     private final boolean validateFieldNames;
     private final String fieldNamePattern;
 
-    // General security
-    private final boolean strictSecurityMode;
-
     private ValidationConfig(Builder builder) {
         this.maxClassHierarchyDepth = builder.maxClassHierarchyDepth;
-        this.strictReflectionMode = builder.strictReflectionMode;
         this.validateFieldNames = builder.validateFieldNames;
         this.fieldNamePattern = builder.fieldNamePattern;
-        this.strictSecurityMode = builder.strictSecurityMode;
     }
 
     /**
@@ -78,8 +69,6 @@ public class ValidationConfig {
      */
     public static ValidationConfig strict() {
         return builder()
-                .strictSecurityMode(true)
-                .strictReflectionMode(true)
                 .validateFieldNames(true)
                 .build();
     }
@@ -89,8 +78,6 @@ public class ValidationConfig {
      */
     public static ValidationConfig permissive() {
         return builder()
-                .strictSecurityMode(false)
-                .strictReflectionMode(false)
                 .validateFieldNames(false)
                 .build();
     }
@@ -104,10 +91,6 @@ public class ValidationConfig {
         return maxClassHierarchyDepth;
     }
 
-    public boolean isStrictReflectionMode() {
-        return strictReflectionMode;
-    }
-
     public boolean isValidateFieldNames() {
         return validateFieldNames;
     }
@@ -116,16 +99,10 @@ public class ValidationConfig {
         return fieldNamePattern;
     }
 
-    public boolean isStrictSecurityMode() {
-        return strictSecurityMode;
-    }
-
     public static class Builder {
         private int maxClassHierarchyDepth = 10;
-        private boolean strictReflectionMode = false;
         private boolean validateFieldNames = true;
         private String fieldNamePattern = "^[a-zA-Z_][a-zA-Z0-9_]*$";
-        private boolean strictSecurityMode = false;
 
         /**
          * Sets the maximum depth when traversing class hierarchy for fields.
@@ -133,15 +110,6 @@ public class ValidationConfig {
          */
         public Builder maxClassHierarchyDepth(int maxClassHierarchyDepth) {
             this.maxClassHierarchyDepth = maxClassHierarchyDepth;
-            return this;
-        }
-
-        /**
-         * Enables strict reflection mode which checks SecurityManager permissions.
-         * Default: false
-         */
-        public Builder strictReflectionMode(boolean strictReflectionMode) {
-            this.strictReflectionMode = strictReflectionMode;
             return this;
         }
 
@@ -160,19 +128,6 @@ public class ValidationConfig {
          */
         public Builder fieldNamePattern(String fieldNamePattern) {
             this.fieldNamePattern = fieldNamePattern;
-            return this;
-        }
-
-        /**
-         * Enables all strict security features.
-         * When true, overrides individual settings to maximum security.
-         */
-        public Builder strictSecurityMode(boolean strictSecurityMode) {
-            this.strictSecurityMode = strictSecurityMode;
-            if (strictSecurityMode) {
-                this.strictReflectionMode = true;
-                this.validateFieldNames = true;
-            }
             return this;
         }
 
