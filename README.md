@@ -9,7 +9,6 @@ A framework-agnostic Java validation library with Laravel-style syntax, inspired
 ## Requirements
 
 - **Java**: 17 or higher
-- **Dependencies**: None (zero external dependencies)
 
 ## Features
 
