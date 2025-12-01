@@ -53,6 +53,10 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <junit.version>6.0.1</junit.version>
         <assertj.version>3.27.6</assertj.version>
+
+        <!-- Skip deployment by default (override in javalidator-core) -->
+        <maven.deploy.skip>true</maven.deploy.skip>
+        <central.publishing.skip>true</central.publishing.skip>
     </properties>
 
     <modules>
@@ -87,24 +91,6 @@
     </dependencyManagement>
 
     <build>
-        <!-- Skip deployment for parent POM - only javalidator-core should be published -->
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-deploy-plugin</artifactId>
-                <version>3.1.1</version>
-                <configuration>
-                    <skip>true</skip>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.sonatype.central</groupId>
-                <artifactId>central-publishing-maven-plugin</artifactId>
-                <configuration>
-                    <skipPublishing>true</skipPublishing>
-                </configuration>
-            </plugin>
-        </plugins>
         <pluginManagement>
             <plugins>
                 <plugin>
@@ -116,6 +102,14 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
                     <version>3.5.4</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-deploy-plugin</artifactId>
+                    <version>3.1.1</version>
+                    <configuration>
+                        <skip>${maven.deploy.skip}</skip>
+                    </configuration>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
@@ -136,6 +130,14 @@
                     <groupId>org.sonatype.central</groupId>
                     <artifactId>central-publishing-maven-plugin</artifactId>
                     <version>0.9.0</version>
+                    <configuration>
+                        <skipPublishing>${central.publishing.skip}</skipPublishing>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>flatten-maven-plugin</artifactId>
+                    <version>1.6.0</version>
                 </plugin>
             </plugins>
         </pluginManagement>
@@ -208,7 +210,33 @@
                             <publishingServerId>central</publishingServerId>
                             <tokenAuth>true</tokenAuth>
                             <autoPublish>true</autoPublish>
+                            <skipPublishing>${central.publishing.skip}</skipPublishing>
                         </configuration>
+                    </plugin>
+
+                    <!-- Flatten POM for Maven Central (resolves parent references) -->
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>flatten-maven-plugin</artifactId>
+                        <configuration>
+                            <flattenMode>ossrh</flattenMode>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>flatten</id>
+                                <phase>process-resources</phase>
+                                <goals>
+                                    <goal>flatten</goal>
+                                </goals>
+                            </execution>
+                            <execution>
+                                <id>flatten.clean</id>
+                                <phase>clean</phase>
+                                <goals>
+                                    <goal>clean</goal>
+                                </goals>
+                            </execution>
+                        </executions>
                     </plugin>
                 </plugins>
             </build>

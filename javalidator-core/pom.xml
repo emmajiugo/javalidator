@@ -15,6 +15,12 @@
     <name>Javalidator Core</name>
     <description>A more elegant and framework-agnostic validation library for java.</description>
 
+    <properties>
+        <!-- Enable deployment for this module -->
+        <maven.deploy.skip>false</maven.deploy.skip>
+        <central.publishing.skip>false</central.publishing.skip>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
@@ -42,21 +48,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-            </plugin>
-            <!-- Enable deployment for this module (overrides parent skip) -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-deploy-plugin</artifactId>
-                <configuration>
-                    <skip>false</skip>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.sonatype.central</groupId>
-                <artifactId>central-publishing-maven-plugin</artifactId>
-                <configuration>
-                    <skipPublishing>false</skipPublishing>
-                </configuration>
             </plugin>
         </plugins>
     </build>
