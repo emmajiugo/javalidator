@@ -63,7 +63,7 @@ jobs:
           GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
         run: |
           ./mvnw clean deploy -Prelease \
-            -Dgpg.passphrase=$GPG_PASSPHRASE \
+            -Dgpg.passphrase="$GPG_PASSPHRASE" \
             --no-transfer-progress \
             --batch-mode
 
