@@ -51,6 +51,8 @@ jobs:
         if: github.event_name == 'workflow_dispatch'
         run: |
           ./mvnw versions:set -DnewVersion=${{ github.event.inputs.version }}
+          # Update javalidator-core dependency version in examples
+          ./mvnw versions:use-dep-version -Dincludes=io.github.emmajiugo:javalidator-core -DdepVersion=${{ github.event.inputs.version }} -DforceVersion=true
           ./mvnw versions:commit
 
       - name: Build and test

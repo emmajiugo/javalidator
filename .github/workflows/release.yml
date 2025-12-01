@@ -82,6 +82,9 @@ jobs:
       - name: Update version in pom.xml
         run: |
           ./mvnw versions:set -DnewVersion=${{ steps.version.outputs.version }}
+          ./mvnw versions:set-property -Dproperty=revision -DnewVersion=${{ steps.version.outputs.version }}
+          # Update javalidator-core dependency version in examples
+          ./mvnw versions:use-dep-version -Dincludes=io.github.emmajiugo:javalidator-core -DdepVersion=${{ steps.version.outputs.version }} -DforceVersion=true
           ./mvnw versions:commit
 
       - name: Run tests
@@ -89,7 +92,7 @@ jobs:
 
       - name: Commit version update
         run: |
-          git add pom.xml javalidator-core/pom.xml
+          git add pom.xml javalidator-core/pom.xml examples/*/pom.xml
           git commit -m "chore: bump version to ${{ steps.version.outputs.version }}"
           git push
 
@@ -135,8 +138,10 @@ jobs:
           SNAPSHOT_VERSION="$MAJOR.$MINOR.$PATCH-SNAPSHOT"
 
           ./mvnw versions:set -DnewVersion=$SNAPSHOT_VERSION
+          # Update javalidator-core dependency version in examples
+          ./mvnw versions:use-dep-version -Dincludes=io.github.emmajiugo:javalidator-core -DdepVersion=$SNAPSHOT_VERSION -DforceVersion=true
           ./mvnw versions:commit
 
-          git add pom.xml javalidator-core/pom.xml
+          git add pom.xml javalidator-core/pom.xml examples/*/pom.xml
           git commit -m "chore: prepare next development iteration $SNAPSHOT_VERSION"
           git push
