@@ -3,7 +3,7 @@
 A framework-agnostic Java validation library with Laravel-style syntax, inspired by declarative validation patterns.
 
 [![Java](https://img.shields.io/badge/Java-17%2B-orange)](https://www.oracle.com/java/)
-[![Maven Central](https://img.shields.io/badge/Maven%20Central-1.0.0-blue)](https://mvnrepository.com/)
+[![Maven Central](https://img.shields.io/maven-central/v/io.github.emmajiugo/javalidator-core.svg?label=Maven%20Central)](https://central.sonatype.com/artifact/io.github.emmajiugo/javalidator-core)
 [![License](https://img.shields.io/badge/License-Apache%202.0-green.svg)](LICENSE)
 
 ## Requirements
@@ -33,20 +33,22 @@ A framework-agnostic Java validation library with Laravel-style syntax, inspired
 
 ## Installation
 
+> **Latest Version:** See the Maven Central badge above for the current version.
+
 ### Maven
 
 ```xml
 <dependency>
     <groupId>io.github.emmajiugo</groupId>
     <artifactId>javalidator-core</artifactId>
-    <version>1.0.0</version>
+    <version><!-- See Maven Central badge above --></version>
 </dependency>
 ```
 
 ### Gradle
 
 ```groovy
-implementation 'io.github.emmajiugo:javalidator-core:1.0.0'
+implementation 'io.github.emmajiugo:javalidator-core:VERSION'
 ```
 
 ## Quick Start
