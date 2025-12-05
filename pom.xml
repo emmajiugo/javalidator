@@ -208,7 +208,6 @@
                         <extensions>true</extensions>
                         <configuration>
                             <publishingServerId>central</publishingServerId>
-                            <tokenAuth>true</tokenAuth>
                             <autoPublish>true</autoPublish>
                             <skipPublishing>${central.publishing.skip}</skipPublishing>
                         </configuration>
