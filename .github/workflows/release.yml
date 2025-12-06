@@ -43,17 +43,18 @@ jobs:
       - name: Calculate next version
         id: version
         run: |
-          CURRENT_VERSION=$(./mvnw help:evaluate -Dexpression=project.version -q -DforceStdout)
-          echo "Current version: $CURRENT_VERSION"
+          # Get latest git tag as source of truth (not pom.xml)
+          LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
+          # Remove 'v' prefix to get version number
+          CURRENT_VERSION=${LATEST_TAG#v}
+          echo "Latest released version (from git tag): $CURRENT_VERSION"
 
           if [ -n "${{ github.event.inputs.custom-version }}" ]; then
             NEW_VERSION="${{ github.event.inputs.custom-version }}"
+            echo "Using custom version: $NEW_VERSION"
           else
-            # Remove -SNAPSHOT if present
-            BASE_VERSION=$(echo $CURRENT_VERSION | sed 's/-SNAPSHOT//')
-
             # Split version into components
-            IFS='.' read -r -a VERSION_PARTS <<< "$BASE_VERSION"
+            IFS='.' read -r -a VERSION_PARTS <<< "$CURRENT_VERSION"
             MAJOR="${VERSION_PARTS[0]}"
             MINOR="${VERSION_PARTS[1]}"
             PATCH="${VERSION_PARTS[2]}"
@@ -74,6 +75,7 @@ jobs:
             esac
 
             NEW_VERSION="$MAJOR.$MINOR.$PATCH"
+            echo "Calculated new version: $NEW_VERSION"
           fi
 
           echo "New version: $NEW_VERSION"
@@ -114,7 +116,7 @@ jobs:
             ### Maven
             ```xml
             <dependency>
-                <groupId>me.emmajiugo</groupId>
+                <groupId>io.github.emmajiugo</groupId>
                 <artifactId>javalidator-core</artifactId>
                 <version>${{ steps.version.outputs.version }}</version>
             </dependency>
@@ -122,7 +124,7 @@ jobs:
 
             ### Gradle
             ```groovy
-            implementation 'me.emmajiugo:javalidator-core:${{ steps.version.outputs.version }}'
+            implementation 'io.github.emmajiugo:javalidator-core:${{ steps.version.outputs.version }}'
             ```
           draft: false
           prerelease: false
