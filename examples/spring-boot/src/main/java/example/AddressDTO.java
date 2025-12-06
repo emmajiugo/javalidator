@@ -1,6 +1,6 @@
 package example;
 
-import me.emmajiugo.javalidator.annotations.Rule;
+import io.github.emmajiugo.javalidator.annotations.Rule;
 
 public record AddressDTO(
         @Rule("required")

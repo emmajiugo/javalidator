@@ -1,8 +1,8 @@
 package example;
 
-import me.emmajiugo.javalidator.annotations.Rule;
-import me.emmajiugo.javalidator.annotations.RuleCascade;
-import me.emmajiugo.javalidator.annotations.Validate;
+import io.github.emmajiugo.javalidator.annotations.Rule;
+import io.github.emmajiugo.javalidator.annotations.RuleCascade;
+import io.github.emmajiugo.javalidator.annotations.Validate;
 
 @Validate
 public record UserDTO(

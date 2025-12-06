@@ -3,7 +3,7 @@ package example;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import me.emmajiugo.javalidator.annotations.Validate;
+import io.github.emmajiugo.javalidator.annotations.Validate;
 
 @Path("/users")
 @Produces(MediaType.APPLICATION_JSON)

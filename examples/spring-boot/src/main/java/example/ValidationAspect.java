@@ -1,9 +1,9 @@
 package example;
 
-import me.emmajiugo.javalidator.Validator;
-import me.emmajiugo.javalidator.annotations.Validate;
-import me.emmajiugo.javalidator.exception.ValidationException;
-import me.emmajiugo.javalidator.model.ValidationResponse;
+import io.github.emmajiugo.javalidator.Validator;
+import io.github.emmajiugo.javalidator.annotations.Validate;
+import io.github.emmajiugo.javalidator.exception.ValidationException;
+import io.github.emmajiugo.javalidator.model.ValidationResponse;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;

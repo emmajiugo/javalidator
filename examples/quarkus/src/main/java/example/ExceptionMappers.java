@@ -1,8 +1,8 @@
 package example;
 
 import jakarta.ws.rs.core.Response;
-import me.emmajiugo.javalidator.exception.ValidationException;
-import me.emmajiugo.javalidator.model.ValidationError;
+import io.github.emmajiugo.javalidator.exception.ValidationException;
+import io.github.emmajiugo.javalidator.model.ValidationError;
 import org.jboss.resteasy.reactive.server.ServerExceptionMapper;
 
 import java.util.HashMap;

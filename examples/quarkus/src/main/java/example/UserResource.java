@@ -2,7 +2,7 @@ package example;
 
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
-import me.emmajiugo.javalidator.annotations.Validate;
+import io.github.emmajiugo.javalidator.annotations.Validate;
 
 @Path("/api/users")
 @Produces(MediaType.APPLICATION_JSON)
