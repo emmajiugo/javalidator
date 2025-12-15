@@ -143,45 +143,6 @@ public record UserDTO(
 }
 ```
 
-### Using ValidationException
-
-```java
-import io.github.emmajiugo.javalidator.exception.ValidationException;
-
-public class UserService {
-    public void createUser(UserDTO dto) {
-        ValidationResponse validation = Validator.validate(dto);
-
-        if (!validation.valid()) {
-            throw new ValidationException(validation.errors());
-        }
-
-        // Proceed with user creation
-        userRepository.save(dto);
-    }
-}
-```
-
-### Service Layer Integration
-
-```java
-public class ProductService {
-
-    public Product createProduct(ProductDTO dto) {
-        // Validate
-        ValidationResponse response = Validator.validate(dto);
-
-        if (!response.valid()) {
-            // Handle errors
-            throw new ValidationException(response.errors());
-        }
-
-        // Business logic
-        return productRepository.save(toEntity(dto));
-    }
-}
-```
-
 ## Documentation
 
 ### 📖 Complete Guides
@@ -189,7 +150,7 @@ public class ProductService {
 Comprehensive documentation for all aspects of Javalidator:
 
 **Core Documentation:**
-- **[Supported Validation Rules](docs/supported-rules.md)** - Complete reference of all 12 built-in rules with examples
+- **[Supported Validation Rules](docs/supported-rules.md)** - Complete reference of all 32 built-in rules with examples
 - **[Custom Validation Rules](docs/custom-rules.md)** - Guide to creating your own validation rules
 
 **Framework Integration:**
@@ -297,41 +258,9 @@ ValidationResponse response = Validator.validate(user);
 // "phoneNumbers[0].number: The number must be exactly 10 digits."
 ```
 
-**Supports:**
-- Single nested objects (records, classes)
-- Collections (List, Set, etc.)
-- Arrays
-- Deep nesting (multiple levels)
-- Null items in collections are skipped
+**Supports:** Single nested objects, collections (List, Set), arrays, deep nesting, and null-safe collection handling.
 
-### Regex Validation
-
-```java
-public record CodeDTO(
-    @Rule("regex:^[A-Z]{3}-\\d{4}$")
-    String productCode  // Must match format: ABC-1234
-) {}
-```
-
-### Enum-like Validation
-
-```java
-public record OrderDTO(
-    @Rule("in:pending,processing,shipped,delivered")
-    String status
-) {}
-```
-
-### Date Validation
-
-```java
-import java.time.LocalDate;
-
-public record EventDTO(
-    @Rule("required|date")
-    LocalDate eventDate
-) {}
-```
+See the **[Supported Rules Guide](docs/supported-rules.md)** for detailed examples of all validation rules including regex, enum, date validation, and more.
 
 ## Security
 
