@@ -32,7 +32,7 @@ A framework-agnostic Java validation library with Laravel-style syntax, inspired
 
 ## Installation
 
-> **Latest Version:** See the Maven Central badge above for the current version.
+[![Maven Central](https://img.shields.io/maven-central/v/io.github.emmajiugo/javalidator-core.svg?label=Latest%20Version&color=blue)](https://central.sonatype.com/artifact/io.github.emmajiugo/javalidator-core)
 
 ### Maven
 
@@ -40,14 +40,14 @@ A framework-agnostic Java validation library with Laravel-style syntax, inspired
 <dependency>
     <groupId>io.github.emmajiugo</groupId>
     <artifactId>javalidator-core</artifactId>
-    <version><!-- See Maven Central badge above --></version>
+    <version>LATEST</version> <!-- Click badge above for latest version -->
 </dependency>
 ```
 
 ### Gradle
 
 ```groovy
-implementation 'io.github.emmajiugo:javalidator-core:VERSION'
+implementation 'io.github.emmajiugo:javalidator-core:LATEST' // Click badge above for latest version
 ```
 
 ## Quick Start
@@ -190,9 +190,14 @@ Use `@RuleCascade` to validate nested objects and collections:
 
 ```java
 public record Order(
-    @Rule("required") String orderId,
-    @RuleCascade Address shippingAddress,   // Validates nested object
-    @RuleCascade List<Item> items           // Validates each item in collection
+    @Rule("required") 
+    String orderId,
+    
+    @RuleCascade 
+    Address shippingAddress,   // Validates nested object
+    
+    @RuleCascade 
+    List<Item> items           // Validates each item in collection
 ) {}
 ```
 
