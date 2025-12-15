@@ -656,4 +656,6 @@ A: Yes! Pass dependencies through the constructor, then register the instance.
 **Q: How do I test custom rules?**
 A: Create unit tests that call `validate()` directly with test data.
 
-Happy validating! 🎉
+---
+
+[← Back to README](../README.md) | [Supported Rules →](supported-rules.md) | [Security Guide →](security.md)
