@@ -26,14 +26,13 @@ A framework-agnostic Java validation library with Laravel-style syntax, inspired
 - [Quick Start](#quick-start)
 - [Usage Examples](#usage-examples)
 - [Documentation](#documentation)
-- [Error Handling](#error-handling)
 - [Advanced Features](#advanced-features)
 - [Security](#security)
 - [Roadmap](#roadmap)
 
 ## Installation
 
-> **Latest Version:** See the Maven Central badge above for the current version.
+[![Maven Central](https://img.shields.io/maven-central/v/io.github.emmajiugo/javalidator-core.svg?label=Latest%20Version&color=blue)](https://central.sonatype.com/artifact/io.github.emmajiugo/javalidator-core)
 
 ### Maven
 
@@ -41,14 +40,14 @@ A framework-agnostic Java validation library with Laravel-style syntax, inspired
 <dependency>
     <groupId>io.github.emmajiugo</groupId>
     <artifactId>javalidator-core</artifactId>
-    <version><!-- See Maven Central badge above --></version>
+    <version>LATEST</version> <!-- Click badge above for latest version -->
 </dependency>
 ```
 
 ### Gradle
 
 ```groovy
-implementation 'io.github.emmajiugo:javalidator-core:VERSION'
+implementation 'io.github.emmajiugo:javalidator-core:LATEST' // Click badge above for latest version
 ```
 
 ## Quick Start
@@ -143,45 +142,6 @@ public record UserDTO(
 }
 ```
 
-### Using ValidationException
-
-```java
-import io.github.emmajiugo.javalidator.exception.ValidationException;
-
-public class UserService {
-    public void createUser(UserDTO dto) {
-        ValidationResponse validation = Validator.validate(dto);
-
-        if (!validation.valid()) {
-            throw new ValidationException(validation.errors());
-        }
-
-        // Proceed with user creation
-        userRepository.save(dto);
-    }
-}
-```
-
-### Service Layer Integration
-
-```java
-public class ProductService {
-
-    public Product createProduct(ProductDTO dto) {
-        // Validate
-        ValidationResponse response = Validator.validate(dto);
-
-        if (!response.valid()) {
-            // Handle errors
-            throw new ValidationException(response.errors());
-        }
-
-        // Business logic
-        return productRepository.save(toEntity(dto));
-    }
-}
-```
-
 ## Documentation
 
 ### 📖 Complete Guides
@@ -189,8 +149,9 @@ public class ProductService {
 Comprehensive documentation for all aspects of Javalidator:
 
 **Core Documentation:**
-- **[Supported Validation Rules](docs/supported-rules.md)** - Complete reference of all 12 built-in rules with examples
+- **[Supported Validation Rules](docs/supported-rules.md)** - Complete reference of all 32 built-in rules with examples
 - **[Custom Validation Rules](docs/custom-rules.md)** - Guide to creating your own validation rules
+- **[Security Guide](docs/security.md)** - Security features, configuration, and best practices
 
 **Framework Integration:**
 - **[Spring Boot Integration](docs/integrations/spring-boot.md)** - AOP-based automatic validation
@@ -221,199 +182,39 @@ Integer quantity;
 
 See the **[Supported Rules Guide](docs/supported-rules.md)** for complete documentation.
 
-## Error Handling
-
-### Option 1: Check ValidationResponse
-
-```java
-ValidationResponse response = Validator.validate(dto);
-
-if (!response.valid()) {
-    response.errors().forEach(error -> {
-        System.out.println("Field: " + error.field());
-        error.messages().forEach(msg ->
-            System.out.println("  - " + msg)
-        );
-    });
-}
-```
-
-### Option 2: Use ValidationException
-
-```java
-try {
-    ValidationResponse response = Validator.validate(dto);
-    if (!response.valid()) {
-        throw new ValidationException(response.errors());
-    }
-    // Process valid data
-} catch (ValidationException e) {
-    e.getErrors().forEach(error -> {
-        // Handle errors
-    });
-}
-```
-
 ## Advanced Features
 
-### Nested Object Validation with @RuleCascade
+### Nested Object Validation
 
-Validate nested objects and collections using `@RuleCascade`:
-
-```java
-import io.github.emmajiugo.javalidator.annotations.RuleCascade;
-
-public record Address(
-    @Rule("required")
-    String street,
-
-    @Rule("required")
-    String city,
-
-    @Rule("required|digits:5")
-    String zipCode
-) {}
-
-public record User(
-    @Rule("required|min:3")
-    String name,
-
-    @Rule("required|email")
-    String email,
-
-    @RuleCascade  // Validates nested Address object
-    Address address,
-
-    @RuleCascade  // Validates each PhoneNumber in the list
-    List<PhoneNumber> phoneNumbers
-) {}
-
-// Validation cascades through nested structures
-User user = new User("John", "john@example.com", address, phones);
-ValidationResponse response = Validator.validate(user);
-
-// Error paths show nested field structure:
-// "address.street: The street field is required."
-// "phoneNumbers[0].number: The number must be exactly 10 digits."
-```
-
-**Supports:**
-- Single nested objects (records, classes)
-- Collections (List, Set, etc.)
-- Arrays
-- Deep nesting (multiple levels)
-- Null items in collections are skipped
-
-### Regex Validation
+Use `@RuleCascade` to validate nested objects and collections:
 
 ```java
-public record CodeDTO(
-    @Rule("regex:^[A-Z]{3}-\\d{4}$")
-    String productCode  // Must match format: ABC-1234
+public record Order(
+    @Rule("required") 
+    String orderId,
+    
+    @RuleCascade 
+    Address shippingAddress,   // Validates nested object
+    
+    @RuleCascade 
+    List<Item> items           // Validates each item in collection
 ) {}
 ```
 
-### Enum-like Validation
+Error paths show the nested structure: `"shippingAddress.city"`, `"items[0].price"`
 
-```java
-public record OrderDTO(
-    @Rule("in:pending,processing,shipped,delivered")
-    String status
-) {}
-```
-
-### Date Validation
-
-```java
-import java.time.LocalDate;
-
-public record EventDTO(
-    @Rule("required|date")
-    LocalDate eventDate
-) {}
-```
+**Supports:** nested objects, collections, arrays, deep nesting. See the **[Supported Rules Guide](docs/supported-rules.md)** for detailed examples.
 
 ## Security
 
-Javalidator is designed with security in mind, providing several protections against common attacks:
+Javalidator includes built-in security protections:
 
-### Built-in Security Features
+- **Type-safe enum validation** - Prevents arbitrary class loading
+- **Pattern caching** - No ReDoS risk (patterns defined at compile-time)
+- **Field name validation** - Prevents injection attacks
+- **Reflection depth limiting** - Prevents memory exhaustion
 
-1. **Type-Safe Enum Validation**
-   - Enum validation requires a compile-time `Class<?>` parameter
-   - Prevents arbitrary class loading attacks
-   - No runtime class name parsing
-
-   ```java
-   public enum Status { ACTIVE, INACTIVE, PENDING }
-
-   public record UserDTO(
-       @Rule(value = "enum", enumClass = Status.class)
-       String status
-   ) {}
-   ```
-
-2. **Pattern Caching (No ReDoS Risk)**
-   - Regex patterns are defined at compile-time by developers, not by users
-   - Patterns are cached for performance
-   - ReDoS (Regular Expression Denial of Service) is not a security concern
-
-3. **Field Name Validation**
-   - Conditional rules validate field names against configured patterns
-   - Prevents field name injection attacks
-   - Default pattern: `^[a-zA-Z_][a-zA-Z0-9_]*$`
-
-4. **Reflection Depth Limiting**
-   - Configurable maximum class hierarchy depth
-   - Prevents memory exhaustion via deeply nested class hierarchies
-   - Default limit: 10 levels
-
-### Security Configuration
-
-Configure security settings using `ValidationConfig`:
-
-```java
-import io.github.emmajiugo.javalidator.config.ValidationConfig;
-import io.github.emmajiugo.javalidator.Validator;
-
-// Use strict security preset
-ValidationConfig config = ValidationConfig.strict();
-Validator.setConfig(config);
-
-// Or customize security settings
-ValidationConfig custom = ValidationConfig.builder()
-    .maxClassHierarchyDepth(10)           // Limit inheritance traversal
-    .validateFieldNames(true)             // Validate field names in conditional rules
-    .fieldNamePattern("^[a-zA-Z_][a-zA-Z0-9_]*$")  // Pattern for valid field names
-    .build();
-Validator.setConfig(custom);
-```
-
-### Configuration Presets
-
-- **`ValidationConfig.defaults()`** - Balanced security and performance for production
-- **`ValidationConfig.strict()`** - Maximum security with all protections enabled
-- **`ValidationConfig.permissive()`** - Minimal checks for development/testing
-
-### Security Best Practices
-
-1. Use `ValidationConfig.strict()` in production environments
-2. Always use the type-safe `enumClass` parameter for enum validation
-3. Validate input at system boundaries (controllers, APIs)
-4. Keep field names simple and follow Java naming conventions
-5. Review custom validation rules for security implications
-
-### Threat Model
-
-**Protected Against:**
-- Arbitrary class loading via enum validation
-- Field name injection in conditional rules
-- Memory exhaustion via unbounded reflection
-
-**Not Applicable:**
-- ReDoS (developers control regex patterns at compile-time)
-- SQL injection (validation library doesn't interact with databases)
-- XSS (validation library doesn't generate HTML)
+Use `ValidationConfig.strict()` for production environments. See the **[Security Guide](docs/security.md)** for configuration options and best practices.
 
 ## Contributing
 

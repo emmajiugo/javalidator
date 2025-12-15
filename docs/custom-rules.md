@@ -423,55 +423,12 @@ public class EmailRule implements ValidationRule {
 
 ### Alternative: Using validateOrThrow()
 
-For cleaner controller code, use `validateOrThrow()` which throws a `ValidationException` on failure:
-```java
-package com.example.myapp.controller;
-
-import com.example.myapp.dto.CreateMemberRequest;
-import io.github.emmajiugo.javalidator.Validator;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-@RestController
-@RequestMapping("/api/members")
-public class MemberController {
-
-    @PostMapping
-    public ResponseEntity<?> createMember(@RequestBody CreateMemberRequest request) {
-        // Throws ValidationException if validation fails
-        Validator.validateOrThrow(request);
-        
-        // Only reached if validation passes
-        return ResponseEntity.ok("Member created successfully");
-    }
-}
-```
-
-Then handle the exception globally with `@RestControllerAdvice`:
-```java
-package com.example.myapp.exception;
-
-import io.github.emmajiugo.javalidator.ValidationException;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.RestControllerAdvice;
-
-@RestControllerAdvice
-public class GlobalExceptionHandler {
-
-    @ExceptionHandler(ValidationException.class)
-    public ResponseEntity<?> handleValidationException(ValidationException ex) {
-        return ResponseEntity.badRequest().body(ex.getErrors());
-    }
-}
-```
-
-**When to use which approach:**
+For cleaner code, use `Validator.validateOrThrow(dto)` which throws a `ValidationException` on failure. See the [framework integration guides](integrations/) for complete examples with exception handling.
 
 | Approach | Use When |
 |----------|----------|
-| `validate()` | You need custom handling, partial validation, or want to combine errors from multiple sources |
-| `validateOrThrow()` | You want cleaner controller code and centralized exception handling |
+| `validate()` | Custom handling, partial validation, or combining errors from multiple sources |
+| `validateOrThrow()` | Cleaner controller code with centralized exception handling |
 
 ## Testing Your Custom Rules
 
@@ -699,4 +656,6 @@ A: Yes! Pass dependencies through the constructor, then register the instance.
 **Q: How do I test custom rules?**
 A: Create unit tests that call `validate()` directly with test data.
 
-Happy validating! 🎉
+---
+
+[← Back to README](../README.md) | [Supported Rules →](supported-rules.md) | [Security Guide →](security.md)

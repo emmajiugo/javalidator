@@ -33,30 +33,6 @@ implementation 'io.github.emmajiugo:javalidator-core:1.0.0'
 
 ## Basic Usage
 
-### 1. Define Your DTO
-
-```java
-package com.example.dto;
-
-import io.github.emmajiugo.javalidator.annotations.Rule;
-
-public record UserDTO(
-    @Rule(value = "required", message = "Username is required")
-    @Rule(value = "min:3", message = "Username must be at least 3 characters")
-    @Rule(value = "max:20", message = "Username must not exceed 20 characters")
-    String username,
-
-    @Rule(value = "required", message = "Email is required")
-    @Rule(value = "email", message = "Invalid email format")
-    String email,
-
-    @Rule("required|gte:18|lte:100")
-    Integer age
-) {}
-```
-
-### 2. Validate Manually
-
 ```java
 import io.github.emmajiugo.javalidator.Validator;
 import io.github.emmajiugo.javalidator.model.ValidationResponse;

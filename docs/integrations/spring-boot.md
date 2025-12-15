@@ -189,30 +189,6 @@ public class UserController {
 
 **Note**: The aspect only validates methods with `@PostMapping`, `@PutMapping`, or `@PatchMapping`. GET requests are not intercepted for performance.
 
-## Example DTO
-
-Define your DTO with Javalidator annotations:
-
-```java
-package com.example.dto;
-
-import io.github.emmajiugo.javalidator.annotations.Rule;
-
-public record UserDTO(
-    @Rule(value = "required", message = "Username is required")
-    @Rule(value = "min:3", message = "Username must be at least 3 characters")
-    @Rule(value = "max:20", message = "Username must not exceed 20 characters")
-    String username,
-
-    @Rule(value = "required", message = "Email is required")
-    @Rule(value = "email", message = "Invalid email format")
-    String email,
-
-    @Rule("required|gte:18|lte:100")
-    Integer age
-) {}
-```
-
 ## Error Response Format
 
 When validation fails, the API returns:
