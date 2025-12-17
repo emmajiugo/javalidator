@@ -1,0 +1,56 @@
+name: Update README
+
+on:
+  workflow_call:
+    inputs:
+      version:
+        description: 'Version to update in README'
+        required: true
+        type: string
+    secrets:
+      RELEASE_TOKEN:
+        required: true
+
+jobs:
+  update-readme:
+    name: Update README
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout main branch
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          token: ${{ secrets.RELEASE_TOKEN }}
+
+      - name: Update README with released version
+        run: |
+          VERSION="${{ inputs.version }}"
+
+          # Configure git
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          # Update version in README.md (replace any version pattern with new version)
+          # Matches: <version>X.Y.Z</version> or <version>LATEST</version>
+          sed -i -E "s|<version>[0-9]+\.[0-9]+\.[0-9]+</version>|<version>${VERSION}</version>|g" README.md
+          sed -i -E "s|<version>LATEST</version>|<version>${VERSION}</version>|g" README.md
+
+          # Matches: :javalidator-core:X.Y.Z or :javalidator-core:LATEST
+          sed -i -E "s|:javalidator-core:[0-9]+\.[0-9]+\.[0-9]+|:javalidator-core:${VERSION}|g" README.md
+          sed -i -E "s|:javalidator-core:LATEST|:javalidator-core:${VERSION}|g" README.md
+
+          # Matches: :javalidator-spring:X.Y.Z or :javalidator-spring:LATEST
+          sed -i -E "s|:javalidator-spring:[0-9]+\.[0-9]+\.[0-9]+|:javalidator-spring:${VERSION}|g" README.md
+          sed -i -E "s|:javalidator-spring:LATEST|:javalidator-spring:${VERSION}|g" README.md
+
+          # Commit and push if there are changes
+          if git diff --quiet README.md; then
+            echo "No changes to README.md"
+          else
+            git add README.md
+            git commit -m "docs: update README with version ${VERSION}"
+            git push origin main
+          fi

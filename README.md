@@ -34,9 +34,10 @@ A framework-agnostic Java validation library with Laravel-style syntax, inspired
 
 [![Maven Central](https://img.shields.io/maven-central/v/io.github.emmajiugo/javalidator-core.svg?label=Latest%20Version&color=blue)](https://central.sonatype.com/artifact/io.github.emmajiugo/javalidator-core)
 
-### Spring Boot (Recommended)
+### Springboot (Recommended)
 
-For Spring Boot applications, use the official starter for auto-configuration:
+For Springboot 3.5.x and above, use the official starter for auto-configuration:
+> **Note**: The starter may also work with Spring Boot 3.2.x - 3.4.x. If you encounter issues, try the [Manual Setup (Without Starter)](docs/integrations/spring-boot.md#manual-setup-without-starter).
 
 **Maven:**
 ```xml
