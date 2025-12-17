@@ -34,20 +34,49 @@ A framework-agnostic Java validation library with Laravel-style syntax, inspired
 
 [![Maven Central](https://img.shields.io/maven-central/v/io.github.emmajiugo/javalidator-core.svg?label=Latest%20Version&color=blue)](https://central.sonatype.com/artifact/io.github.emmajiugo/javalidator-core)
 
-### Maven
+### Spring Boot (Recommended)
 
+For Spring Boot applications, use the official starter for auto-configuration:
+
+**Maven:**
+```xml
+<dependency>
+    <groupId>io.github.emmajiugo</groupId>
+    <artifactId>javalidator-spring</artifactId>
+    <version>LATEST</version>
+</dependency>
+
+<!-- Required for AOP-based validation -->
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-aop</artifactId>
+</dependency>
+```
+
+**Gradle:**
+```groovy
+implementation 'io.github.emmajiugo:javalidator-spring:LATEST'
+implementation 'org.springframework.boot:spring-boot-starter-aop'
+```
+
+See the **[Spring Boot Integration Guide](docs/integrations/spring-boot.md)** for configuration options.
+
+### Core Library (Framework-Agnostic)
+
+For plain Java, Quarkus, Jakarta EE, or manual configuration:
+
+**Maven:**
 ```xml
 <dependency>
     <groupId>io.github.emmajiugo</groupId>
     <artifactId>javalidator-core</artifactId>
-    <version>LATEST</version> <!-- Click badge above for latest version -->
+    <version>LATEST</version>
 </dependency>
 ```
 
-### Gradle
-
+**Gradle:**
 ```groovy
-implementation 'io.github.emmajiugo:javalidator-core:LATEST' // Click badge above for latest version
+implementation 'io.github.emmajiugo:javalidator-core:LATEST'
 ```
 
 ## Quick Start
@@ -238,7 +267,7 @@ This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENS
 - [ ] Internationalization (i18n) support
 
 ### 🚀 Framework Adapters
-- [ ] Spring Boot starter with AOP integration
+- [x] Spring Boot starter with AOP integration (`javalidator-spring`)
 - [ ] Quarkus extension
 - [ ] Jakarta EE module
 

@@ -6,7 +6,7 @@ import io.github.emmajiugo.javalidator.annotations.Validate;
 
 @Validate
 public record UserDTO(
-        @Rule("required|min:3|max:20")
+        @Rule("required|min:3|max:20|noreservedwords")
         String username,
 
         @Rule("required|email")

@@ -14,7 +14,20 @@ cd plain-java && mvn exec:java
 ---
 
 ### 🌱 Spring Boot (`spring-boot/`)
-Uses Spring AOP with `@Aspect` for automatic validation on REST endpoints.
+Uses the **`javalidator-spring`** starter for zero-config automatic validation on REST endpoints.
+
+**Dependencies:**
+```xml
+<dependency>
+    <groupId>io.github.emmajiugo</groupId>
+    <artifactId>javalidator-spring</artifactId>
+    <version>0.3.2-SNAPSHOT</version>
+</dependency>
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-aop</artifactId>
+</dependency>
+```
 
 **Run:**
 ```bash
@@ -31,40 +44,36 @@ curl -X POST http://localhost:8080/api/users \
   -d '{"username":"john_doe","email":"john@example.com","age":25}'
 ```
 
-**Integration (add once):**
-```java
-// ValidationAspect.java - intercepts REST controller methods with @Validate parameters
-@Aspect
-@Component
-public class ValidationAspect {
-
-    // Only intercepts @RestController methods with @PostMapping/@PutMapping/@PatchMapping
-    @Before("@within(org.springframework.web.bind.annotation.RestController) && " +
-            "(@annotation(org.springframework.web.bind.annotation.PostMapping) || " +
-            "@annotation(org.springframework.web.bind.annotation.PutMapping) || " +
-            "@annotation(org.springframework.web.bind.annotation.PatchMapping))")
-    public void validateParameters(JoinPoint joinPoint) {
-        // Validates @Validate parameters automatically
-    }
-}
-
-// pom.xml - add AOP dependency
-<dependency>
-    <groupId>org.springframework.boot</groupId>
-    <artifactId>spring-boot-starter-aop</artifactId>
-</dependency>
-```
+**That's it!** The starter auto-configures:
+- `ValidationAspect` - Intercepts REST controller methods
+- `GlobalExceptionHandler` - Returns HTTP 400 for validation failures
+- Custom rule registration - Any `@Component` implementing `ValidationRule` is auto-registered
 
 **Usage (across all controllers):**
 ```java
 @PostMapping
-public ResponseEntity<String> createUser(@Validate @RequestBody UserDTO userDTO) {
-    // If we reach here, validation passed
+public ResponseEntity<String> createUser(@RequestBody UserDTO userDTO) {
+    // Validation happens automatically via @Validate on DTO class
     return ResponseEntity.ok("User created: " + userDTO.username());
 }
 ```
 
-**Performance Note:** The aspect only intercepts REST controller endpoints with POST/PUT/PATCH mappings, not all methods in your application.
+**Custom Rules (optional):**
+```java
+@Component
+public class NoReservedWordsRule implements ValidationRule {
+    // Automatically registered at startup
+}
+```
+
+**Configuration (optional):**
+```yaml
+javalidator:
+  aspect.enabled: true
+  exception-handler.enabled: true
+```
+
+**Performance Note:** The aspect only intercepts REST controller endpoints with POST/PUT/PATCH mappings.
 
 ---
 
@@ -164,7 +173,7 @@ public record UserDTO(
 ```
 
 ### 2. Add framework integration (once)
-- **Spring Boot**: Spring AOP `@Aspect`
+- **Spring Boot**: Use `javalidator-spring` starter (zero-config)
 - **Jakarta EE/Quarkus**: CDI `@Interceptor`
 
 ### 3. Use in all endpoints

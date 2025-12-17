@@ -51,16 +51,17 @@
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <junit.version>6.0.1</junit.version>
         <assertj.version>3.27.6</assertj.version>
+        <spring-boot.version>3.5.8</spring-boot.version>
 
-        <!-- Skip deployment by default (override in javalidator-core) -->
+        <!-- Skip deployment by default (override in javalidator-core and javalidator-spring) -->
         <maven.deploy.skip>true</maven.deploy.skip>
         <central.publishing.skip>true</central.publishing.skip>
     </properties>
 
     <modules>
         <module>javalidator-core</module>
+        <module>javalidator-spring</module>
         <module>examples/plain-java</module>
         <module>examples/spring-boot</module>
         <module>examples/jakarta-ee</module>
@@ -69,18 +70,6 @@
 
     <dependencyManagement>
         <dependencies>
-            <dependency>
-                <groupId>org.junit.jupiter</groupId>
-                <artifactId>junit-jupiter-api</artifactId>
-                <version>${junit.version}</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.junit.jupiter</groupId>
-                <artifactId>junit-jupiter-engine</artifactId>
-                <version>${junit.version}</version>
-                <scope>test</scope>
-            </dependency>
             <dependency>
                 <groupId>org.assertj</groupId>
                 <artifactId>assertj-core</artifactId>
