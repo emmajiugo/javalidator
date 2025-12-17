@@ -1,0 +1,88 @@
+{
+  "groups": [
+    {
+      "name": "javalidator",
+      "type": "io.github.emmajiugo.javalidator.spring.JavalidatorProperties",
+      "description": "Configuration properties for Javalidator."
+    },
+    {
+      "name": "javalidator.aspect",
+      "type": "io.github.emmajiugo.javalidator.spring.JavalidatorProperties$Aspect",
+      "description": "AOP aspect configuration."
+    },
+    {
+      "name": "javalidator.exception-handler",
+      "type": "io.github.emmajiugo.javalidator.spring.JavalidatorProperties$ExceptionHandler",
+      "description": "Exception handler configuration."
+    }
+  ],
+  "properties": [
+    {
+      "name": "javalidator.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Whether to enable Javalidator auto-configuration.",
+      "defaultValue": true
+    },
+    {
+      "name": "javalidator.max-class-hierarchy-depth",
+      "type": "java.lang.Integer",
+      "description": "Maximum depth when traversing class hierarchy for fields.",
+      "defaultValue": 10
+    },
+    {
+      "name": "javalidator.validate-field-names",
+      "type": "java.lang.Boolean",
+      "description": "Whether to validate field names used in conditional rules.",
+      "defaultValue": true
+    },
+    {
+      "name": "javalidator.field-name-pattern",
+      "type": "java.lang.String",
+      "description": "Regex pattern for valid field names.",
+      "defaultValue": "^[a-zA-Z_][a-zA-Z0-9_]*$"
+    },
+    {
+      "name": "javalidator.aspect.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Whether to enable the validation AOP aspect.",
+      "defaultValue": true
+    },
+    {
+      "name": "javalidator.aspect.validate-get-requests",
+      "type": "java.lang.Boolean",
+      "description": "Whether to validate GET request parameters.",
+      "defaultValue": false
+    },
+    {
+      "name": "javalidator.aspect.validate-delete-requests",
+      "type": "java.lang.Boolean",
+      "description": "Whether to validate DELETE request parameters.",
+      "defaultValue": false
+    },
+    {
+      "name": "javalidator.exception-handler.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Whether to enable the global exception handler.",
+      "defaultValue": true
+    },
+    {
+      "name": "javalidator.exception-handler.include-path",
+      "type": "java.lang.Boolean",
+      "description": "Whether to include the request path in error responses.",
+      "defaultValue": true
+    },
+    {
+      "name": "javalidator.exception-handler.include-timestamp",
+      "type": "java.lang.Boolean",
+      "description": "Whether to include a timestamp in error responses.",
+      "defaultValue": true
+    },
+    {
+      "name": "javalidator.exception-handler.message",
+      "type": "java.lang.String",
+      "description": "Custom error message for validation failures.",
+      "defaultValue": "Validation failed"
+    }
+  ],
+  "hints": []
+}

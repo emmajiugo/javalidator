@@ -19,17 +19,21 @@
         <!-- Enable deployment for this module -->
         <maven.deploy.skip>false</maven.deploy.skip>
         <central.publishing.skip>false</central.publishing.skip>
+        <!-- JUnit 6 for javalidator-core -->
+        <junit.version>6.0.1</junit.version>
     </properties>
 
     <dependencies>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
+            <version>${junit.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-engine</artifactId>
+            <version>${junit.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>

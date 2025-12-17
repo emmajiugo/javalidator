@@ -1,47 +1,289 @@
 # Spring Boot Integration
 
-This guide shows how to integrate Javalidator with Spring Boot using AOP for automatic validation.
+This guide shows how to integrate Javalidator with Spring Boot using the official Spring Boot Starter.
 
-## Overview
+## Quick Start (Recommended)
 
-With Spring Boot AOP, you can automatically validate DTOs in your controllers without manually calling `Validator.validate()`. This approach uses:
-- **AspectJ** for method interception
-- **@Validate annotation** from javalidator-core to mark parameters for validation
-- **Optimized pointcut** that only intercepts REST controller endpoints
-- **Exception handler** for consistent error responses
+The easiest way to use Javalidator with Spring Boot is with the official starter, which auto-configures everything for you.
 
-## Prerequisites
-
-Add these dependencies to your `pom.xml`:
+### Step 1: Add Dependencies
 
 ```xml
-<!-- Javalidator Core -->
+<!-- Javalidator Spring Boot Starter -->
 <dependency>
     <groupId>io.github.emmajiugo</groupId>
-    <artifactId>javalidator-core</artifactId>
-    <version>1.0.0</version>
+    <artifactId>javalidator-spring</artifactId>
+    <version>0.3.2</version>
 </dependency>
 
-<!-- Spring Boot AOP -->
+<!-- Required for AOP-based validation -->
 <dependency>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-aop</artifactId>
 </dependency>
+```
 
-<!-- Spring Boot Web (if not already included) -->
+That's it! The starter automatically configures:
+- **ValidationAspect** - Intercepts REST controller methods and validates parameters
+- **GlobalExceptionHandler** - Returns structured HTTP 400 responses for validation failures
+- **Custom Rule Registration** - Any `ValidationRule` beans are auto-registered
+
+### Step 2: Create Your DTO
+
+```java
+import io.github.emmajiugo.javalidator.annotations.Rule;
+import io.github.emmajiugo.javalidator.annotations.RuleCascade;
+import io.github.emmajiugo.javalidator.annotations.Validate;
+
+@Validate
+public record UserDTO(
+        @Rule("required|min:3|max:20")
+        String username,
+
+        @Rule("required|email")
+        String email,
+
+        @Rule("required|gte:18")
+        Integer age,
+
+        @RuleCascade  // Validates nested objects
+        AddressDTO address
+) {}
+```
+
+### Step 3: Use in Your Controller
+
+```java
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequestMapping("/api/users")
+public class UserController {
+
+    @PostMapping
+    public ResponseEntity<String> createUser(@RequestBody UserDTO dto) {
+        // Validation happens automatically!
+        // If validation fails, a 400 response is returned
+        return ResponseEntity.ok("User created: " + dto.username());
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<String> updateUser(
+            @PathVariable Long id,
+            @RequestBody UserDTO dto) {
+        return ResponseEntity.ok("User updated: " + dto.username());
+    }
+}
+```
+
+**Note**: The `@Validate` annotation on the DTO class is sufficient. The aspect detects it automatically.
+
+## Error Response Format
+
+When validation fails, the API returns HTTP 400 with:
+
+```json
+{
+  "status": "error",
+  "message": "Validation failed",
+  "errors": {
+    "username": [
+      "The username field is required.",
+      "The username must be at least 3 characters."
+    ],
+    "email": [
+      "The email must be a valid email address."
+    ],
+    "age": [
+      "The age must be at least 18."
+    ]
+  },
+  "path": "/api/users",
+  "timestamp": "2025-12-16T21:52:11.835557Z"
+}
+```
+
+## Configuration
+
+Configure Javalidator via `application.properties` or `application.yml`:
+
+```yaml
+javalidator:
+  enabled: true                          # Enable/disable entire auto-config (default: true)
+  max-class-hierarchy-depth: 10          # Security: max inheritance depth (default: 10)
+  validate-field-names: true             # Security: validate field names (default: true)
+
+  aspect:
+    enabled: true                        # Enable/disable AOP aspect (default: true)
+    validate-get-requests: false         # Validate GET parameters (default: false)
+    validate-delete-requests: false      # Validate DELETE parameters (default: false)
+
+  exception-handler:
+    enabled: true                        # Enable/disable exception handler (default: true)
+    include-path: true                   # Include request path in response (default: true)
+    include-timestamp: true              # Include timestamp in response (default: true)
+    message: "Validation failed"         # Custom error message (default: "Validation failed")
+```
+
+## Custom Validation Rules
+
+Create custom rules by implementing `ValidationRule` and annotating with `@Component`:
+
+```java
+import io.github.emmajiugo.javalidator.ValidationRule;
+import org.springframework.stereotype.Component;
+
+import java.util.Set;
+
+@Component
+public class NoReservedWordsRule implements ValidationRule {
+
+    private static final Set<String> RESERVED = Set.of(
+            "admin", "root", "system", "moderator"
+    );
+
+    @Override
+    public String validate(String fieldName, Object value, String parameter) {
+        if (value == null) return null;
+
+        String stringValue = value.toString().toLowerCase();
+        for (String reserved : RESERVED) {
+            if (stringValue.contains(reserved)) {
+                return "The " + fieldName + " cannot contain reserved word: " + reserved;
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public String getName() {
+        return "noreservedwords";
+    }
+}
+```
+
+Use it in your DTO:
+
+```java
+@Validate
+public record UserDTO(
+        @Rule("required|min:3|noreservedwords")
+        String username,
+        // ...
+) {}
+```
+
+The rule is automatically registered at startup:
+```
+INFO  i.g.e.j.s.JavalidatorAutoConfiguration : Registered 1 custom validation rule(s)
+```
+
+## Programmatic Customization
+
+For advanced configuration, create a `JavalidatorCustomizer` bean:
+
+```java
+import io.github.emmajiugo.javalidator.spring.customizer.JavalidatorCustomizer;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+@Configuration
+public class ValidationConfig {
+
+    @Bean
+    public JavalidatorCustomizer javalidatorCustomizer() {
+        return builder -> builder
+                .maxClassHierarchyDepth(15)
+                .validateFieldNames(true)
+                .fieldNamePattern("^[a-zA-Z_][a-zA-Z0-9_]*$");
+    }
+}
+```
+
+## Custom Exception Handler
+
+To customize the error response format, disable the default handler and create your own:
+
+```yaml
+javalidator:
+  exception-handler:
+    enabled: false
+```
+
+```java
+import io.github.emmajiugo.javalidator.exception.ValidationException;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+@RestControllerAdvice
+public class CustomValidationHandler {
+
+    @ExceptionHandler(ValidationException.class)
+    public ResponseEntity<CustomErrorResponse> handleValidation(ValidationException ex) {
+        return ResponseEntity.badRequest().body(
+            new CustomErrorResponse("VALIDATION_ERROR", ex.getErrors())
+        );
+    }
+}
+```
+
+## Testing
+
+Test your validation:
+
+```bash
+# Invalid request
+curl -X POST http://localhost:8080/api/users \
+  -H "Content-Type: application/json" \
+  -d '{"username": "ad", "email": "invalid", "age": 15}'
+
+# Response: HTTP 400
+{
+  "status": "error",
+  "message": "Validation failed",
+  "errors": {
+    "username": ["The username must be at least 3 characters."],
+    "email": ["The email must be a valid email address."],
+    "age": ["The age must be at least 18."]
+  }
+}
+
+# Valid request
+curl -X POST http://localhost:8080/api/users \
+  -H "Content-Type: application/json" \
+  -d '{"username": "johndoe", "email": "john@example.com", "age": 25}'
+
+# Response: HTTP 200
+User created: johndoe
+```
+
+## Manual Setup (Without Starter)
+
+If you prefer manual configuration or need more control, see the [Manual Spring Boot Setup](#manual-setup-without-starter-1) section below.
+
+<details>
+<summary><strong>Manual Setup (Without Starter)</strong></summary>
+
+### Dependencies
+
+```xml
+<dependency>
+    <groupId>io.github.emmajiugo</groupId>
+    <artifactId>javalidator-core</artifactId>
+    <version>0.3.2</version>
+</dependency>
+
 <dependency>
     <groupId>org.springframework.boot</groupId>
-    <artifactId>spring-boot-starter-web</artifactId>
+    <artifactId>spring-boot-starter-aop</artifactId>
 </dependency>
 ```
 
-## Step 1: Create Validation Aspect
-
-Create an AOP aspect to intercept REST controller methods and validate parameters marked with `@Validate`:
+### Create Validation Aspect
 
 ```java
-package com.example.validation;
-
 import io.github.emmajiugo.javalidator.Validator;
 import io.github.emmajiugo.javalidator.annotations.Validate;
 import io.github.emmajiugo.javalidator.exception.ValidationException;
@@ -52,16 +294,8 @@ import org.aspectj.lang.annotation.Before;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.stereotype.Component;
 
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Parameter;
 
-/**
- * AOP aspect that intercepts REST controller endpoint methods with @Validate annotated parameters
- * and automatically validates them using Javalidator.
- *
- * <p>This aspect only intercepts methods in @RestController classes that are annotated with
- * @PostMapping, @PutMapping, or @PatchMapping for optimal performance.
- */
 @Aspect
 @Component
 public class ValidationAspect {
@@ -76,230 +310,80 @@ public class ValidationAspect {
         Object[] args = joinPoint.getArgs();
 
         for (int i = 0; i < parameters.length; i++) {
-            if (hasValidateAnnotation(parameters[i])) {
-                Object arg = args[i];
-                if (arg != null) {
-                    ValidationResponse response = Validator.validate(arg);
-                    if (!response.valid()) {
-                        throw new ValidationException(response.errors());
-                    }
+            Parameter param = parameters[i];
+            Object arg = args[i];
+
+            if (arg != null && shouldValidate(param)) {
+                ValidationResponse response = Validator.validate(arg);
+                if (!response.valid()) {
+                    throw new ValidationException(response.errors());
                 }
             }
         }
     }
 
-    private boolean hasValidateAnnotation(Parameter parameter) {
-        for (Annotation annotation : parameter.getAnnotations()) {
-            if (annotation instanceof Validate) {
-                return true;
-            }
-        }
-        return false;
+    private boolean shouldValidate(Parameter param) {
+        return param.isAnnotationPresent(Validate.class) ||
+               param.getType().isAnnotationPresent(Validate.class);
     }
 }
 ```
 
-**Key Features:**
-- ✅ **Optimized Performance**: Only intercepts `@RestController` methods with `@PostMapping`, `@PutMapping`, or `@PatchMapping`
-- ✅ **No Custom Annotations**: Uses the built-in `@Validate` annotation from javalidator-core
-- ✅ **Selective Validation**: Validates only parameters marked with `@Validate`, allowing fine-grained control
-
-## Step 3: Create Exception Handler
-
-Create a global exception handler to return consistent error responses:
+### Create Exception Handler
 
 ```java
-package com.example.validation;
-
 import io.github.emmajiugo.javalidator.exception.ValidationException;
 import io.github.emmajiugo.javalidator.model.ValidationError;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Global exception handler for validation errors.
- */
 @RestControllerAdvice
-public class ValidationExceptionHandler {
-
-    @ExceptionHandler(ValidationException.class)
-    public ResponseEntity<Map<String, Object>> handleValidationException(ValidationException ex) {
-        Map<String, Object> response = new HashMap<>();
-        response.put("timestamp", LocalDateTime.now());
-        response.put("status", HttpStatus.BAD_REQUEST.value());
-        response.put("error", "Validation Failed");
-        response.put("errors", formatErrors(ex.getErrors()));
-
-        return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
-                .body(response);
-    }
-
-    private Map<String, List<String>> formatErrors(List<ValidationError> errors) {
-        Map<String, List<String>> formattedErrors = new HashMap<>();
-        for (ValidationError error : errors) {
-            formattedErrors.put(error.field(), error.messages());
-        }
-        return formattedErrors;
-    }
-}
-```
-
-## Step 2: Use in Your Controllers
-
-Now you can use `@Validate` from javalidator-core to automatically validate request bodies:
-
-```java
-package com.example.controller;
-
-import com.example.dto.UserDTO;
-import io.github.emmajiugo.javalidator.annotations.Validate;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-@RestController
-@RequestMapping("/api/users")
-public class UserController {
-
-    @PostMapping
-    public ResponseEntity<String> createUser(@Validate @RequestBody UserDTO dto) {
-        // Validation happens automatically before this line
-        // If validation fails, ValidationException is thrown and handled by exception handler
-
-        // Your business logic here
-        return ResponseEntity.ok("User created successfully");
-    }
-
-    @PutMapping("/{id}")
-    public ResponseEntity<String> updateUser(
-            @PathVariable Long id,
-            @Validate @RequestBody UserDTO dto) {
-        // Automatic validation
-        return ResponseEntity.ok("User updated successfully");
-    }
-}
-```
-
-**Note**: The aspect only validates methods with `@PostMapping`, `@PutMapping`, or `@PatchMapping`. GET requests are not intercepted for performance.
-
-## Error Response Format
-
-When validation fails, the API returns:
-
-```json
-{
-  "timestamp": "2025-11-22T00:50:00",
-  "status": 400,
-  "error": "Validation Failed",
-  "errors": {
-    "username": [
-      "Username must be at least 3 characters"
-    ],
-    "email": [
-      "Invalid email format"
-    ]
-  }
-}
-```
-
-## Configuration (Optional)
-
-Enable AspectJ auto-proxying in your main application class if not already enabled:
-
-```java
-package com.example;
-
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.annotation.EnableAspectJAutoProxy;
-
-@SpringBootApplication
-@EnableAspectJAutoProxy
-public class Application {
-    public static void main(String[] args) {
-        SpringApplication.run(Application.class, args);
-    }
-}
-```
-
-## Testing
-
-Test your validation with a simple curl command:
-
-```bash
-curl -X POST http://localhost:8080/api/users \
-  -H "Content-Type: application/json" \
-  -d '{"username":"jo","email":"invalid","age":15}'
-```
-
-Expected response:
-```json
-{
-  "timestamp": "2025-11-22T00:50:00",
-  "status": 400,
-  "error": "Validation Failed",
-  "errors": {
-    "username": ["Username must be at least 3 characters"],
-    "email": ["Invalid email format"],
-    "age": ["The age must be at least 18."]
-  }
-}
-```
-
-## Customization
-
-### Custom Error Response Format
-
-Modify the `ValidationExceptionHandler` to return your preferred format:
-
-```java
-@ExceptionHandler(ValidationException.class)
-public ResponseEntity<CustomErrorResponse> handleValidationException(ValidationException ex) {
-    CustomErrorResponse response = new CustomErrorResponse(
-        "VALIDATION_ERROR",
-        "Request validation failed",
-        ex.getErrors()
-    );
-    return ResponseEntity.badRequest().body(response);
-}
-```
-
-### Per-Controller Exception Handling
-
-Override global handler in specific controllers:
-
-```java
-@RestController
-public class SpecialController {
+public class GlobalExceptionHandler {
 
     @ExceptionHandler(ValidationException.class)
     public ResponseEntity<Map<String, Object>> handleValidation(ValidationException ex) {
-        // Custom handling for this controller only
-        return ResponseEntity.badRequest().body(Map.of("errors", ex.getErrors()));
+        Map<String, Object> response = new HashMap<>();
+        response.put("status", "error");
+        response.put("message", "Validation failed");
+        response.put("errors", formatErrors(ex.getErrors()));
+        return ResponseEntity.badRequest().body(response);
+    }
+
+    private Map<String, List<String>> formatErrors(List<ValidationError> errors) {
+        Map<String, List<String>> formatted = new HashMap<>();
+        for (ValidationError error : errors) {
+            formatted.put(error.field(), error.messages());
+        }
+        return formatted;
     }
 }
 ```
 
+</details>
+
 ## Troubleshooting
 
-**Problem**: Aspect not triggered
-**Solution**: Ensure `spring-boot-starter-aop` is in dependencies. The aspect only intercepts `@RestController` methods with `@PostMapping`, `@PutMapping`, or `@PatchMapping`
+| Problem | Solution |
+|---------|----------|
+| Aspect not triggered | Ensure `spring-boot-starter-aop` is in dependencies |
+| GET requests not validated | By design, only POST/PUT/PATCH are validated. Enable via `javalidator.aspect.validate-get-requests=true` |
+| Custom rule not registered | Ensure it's annotated with `@Component` or defined as a `@Bean` |
+| Entire validation disabled | Check `javalidator.enabled` property |
 
-**Problem**: Validation not working on GET requests
-**Solution**: By design, GET requests are not intercepted for performance. Only POST/PUT/PATCH methods trigger validation
+## Requirements
 
-**Problem**: Custom messages not showing
-**Solution**: Check that `message` parameter is set in `@Rule` annotation
+- Spring Boot 3.5.x or later (including 4.x)
+- Java 17 or later
 
 ## Next Steps
 
+- [Supported Rules](../supported-rules.md)
+- [Custom Rules](../custom-rules.md)
+- [Plain Java Integration](plain-java.md)
 - [Quarkus Integration](quarkus.md)
 - [Jakarta EE Integration](jakarta-ee.md)
-- [Plain Java Integration](plain-java.md)

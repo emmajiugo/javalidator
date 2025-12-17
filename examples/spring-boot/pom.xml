@@ -29,15 +29,17 @@
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
 
+        <!-- Javalidator Spring Boot Starter - auto-configures validation aspect and exception handler -->
+        <dependency>
+            <groupId>io.github.emmajiugo</groupId>
+            <artifactId>javalidator-spring</artifactId>
+            <version>0.3.2-SNAPSHOT</version>
+        </dependency>
+
+        <!-- Required for AOP-based validation -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-aop</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>io.github.emmajiugo</groupId>
-            <artifactId>javalidator-core</artifactId>
-            <version>0.3.2-SNAPSHOT</version>
         </dependency>
     </dependencies>
 
