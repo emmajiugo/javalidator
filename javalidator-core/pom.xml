@@ -7,7 +7,7 @@
     <parent>
         <groupId>io.github.emmajiugo</groupId>
         <artifactId>javalidator</artifactId>
-        <version>0.3.2-SNAPSHOT</version>
+        <version>0.4.0</version>
     </parent>
 
     <artifactId>javalidator-core</artifactId>
