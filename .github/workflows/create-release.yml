@@ -116,9 +116,7 @@ jobs:
           tag_name: v${{ steps.version.outputs.version }}
           name: Release v${{ steps.version.outputs.version }}
           body: |
-            ## Changes in version ${{ steps.version.outputs.version }}
-
-            See [CHANGELOG.md](CHANGELOG.md) for details.
+            ## Installation
 
             ### Maven (Core - framework agnostic)
             ```xml
