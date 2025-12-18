@@ -193,14 +193,6 @@ Comprehensive documentation for all aspects of Javalidator:
 
 **32 Built-in Rules Available** - See the [Supported Rules Guide](docs/supported-rules.md) for complete documentation.
 
-**Core Rules:** `required`, `min`, `max`, `email`, `numeric`, `gt`, `lt`, `gte`, `lte`, `regex`, `in`
-**Date Rules:** `date`, `before`, `after`, `future`, `past`
-**Format Rules:** `url`, `ip`, `uuid`, `json`, `alpha`, `alpha_num`, `enum`, `digits`
-**Special Rules:** `between`, `size`, `nullable`
-**Conditional Rules:** `required_if`, `required_unless`
-**Field Comparison:** `same`, `different`
-**Array/Collection:** `distinct`
-
 **Combining Rules:**
 ```java
 @Rule("required|email|max:100")
@@ -268,7 +260,7 @@ This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENS
 - [ ] Internationalization (i18n) support
 
 ### 🚀 Framework Adapters
-- [x] Spring Boot starter with AOP integration (`javalidator-spring`)
+- [x] Spring Boot starter (`javalidator-spring`)
 - [ ] Quarkus extension
 - [ ] Jakarta EE module
 
