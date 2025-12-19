@@ -2,9 +2,7 @@ package example;
 
 import io.github.emmajiugo.javalidator.annotations.Rule;
 import io.github.emmajiugo.javalidator.annotations.RuleCascade;
-import io.github.emmajiugo.javalidator.annotations.Validate;
 
-@Validate
 public record UserDTO(
         @Rule("required|min:3|max:20|noreservedwords")
         String username,

@@ -102,14 +102,23 @@ public class JavalidatorProperties {
         private boolean enabled = true;
 
         /**
-         * Whether to validate GET request parameters (default: false, only POST/PUT/PATCH).
+         * Whether to validate GET request parameters.
+         * Enabled by default to support @Rule validation on @PathVariable and @RequestParam.
          */
-        private boolean validateGetRequests = false;
+        private boolean validateGetRequests = true;
 
         /**
-         * Whether to validate DELETE request parameters (default: false).
+         * Whether to validate DELETE request parameters.
+         * Enabled by default to support @Rule validation on @PathVariable and @RequestParam.
          */
-        private boolean validateDeleteRequests = false;
+        private boolean validateDeleteRequests = true;
+
+        /**
+         * Whether to enable method validation in classes annotated with @Validated.
+         * This includes @Service, @Component, and other Spring beans.
+         * Requires the @Validated annotation on the class.
+         */
+        private boolean validateServices = true;
 
         public boolean isEnabled() {
             return enabled;
@@ -133,6 +142,14 @@ public class JavalidatorProperties {
 
         public void setValidateDeleteRequests(boolean validateDeleteRequests) {
             this.validateDeleteRequests = validateDeleteRequests;
+        }
+
+        public boolean isValidateServices() {
+            return validateServices;
+        }
+
+        public void setValidateServices(boolean validateServices) {
+            this.validateServices = validateServices;
         }
     }
 

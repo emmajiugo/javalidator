@@ -68,8 +68,11 @@ import jakarta.interceptor.AroundInvoke;
 import jakarta.interceptor.Interceptor;
 import jakarta.interceptor.InvocationContext;
 import io.github.emmajiugo.javalidator.Validator;
+import io.github.emmajiugo.javalidator.annotations.Valid;
 import io.github.emmajiugo.javalidator.exception.ValidationException;
 import io.github.emmajiugo.javalidator.model.ValidationResponse;
+
+import java.lang.reflect.Parameter;
 
 /**
  * CDI Interceptor for automatic DTO validation using Javalidator.
@@ -81,15 +84,17 @@ public class ValidationInterceptor {
 
     @AroundInvoke
     public Object validateParameters(InvocationContext context) throws Exception {
-        Object[] parameters = context.getParameters();
+        Parameter[] parameters = context.getMethod().getParameters();
+        Object[] args = context.getParameters();
 
-        // Validate all parameters
-        for (Object parameter : parameters) {
-            if (parameter != null && shouldValidate(parameter)) {
-                ValidationResponse response = Validator.validate(parameter);
-
-                if (!response.valid()) {
-                    throw new ValidationException(response.errors());
+        for (int i = 0; i < parameters.length; i++) {
+            if (hasValidAnnotation(parameters[i])) {
+                Object arg = args[i];
+                if (arg != null) {
+                    ValidationResponse response = Validator.validate(arg);
+                    if (!response.valid()) {
+                        throw new ValidationException(response.errors());
+                    }
                 }
             }
         }
@@ -97,24 +102,8 @@ public class ValidationInterceptor {
         return context.proceed();
     }
 
-    /**
-     * Determine if parameter should be validated.
-     * Skip primitive types, strings without annotations, etc.
-     */
-    private boolean shouldValidate(Object parameter) {
-        Class<?> clazz = parameter.getClass();
-
-        // Skip primitive wrappers and strings
-        if (clazz.isPrimitive() ||
-            clazz == String.class ||
-            clazz == Integer.class ||
-            clazz == Long.class ||
-            clazz == Boolean.class) {
-            return false;
-        }
-
-        // Validate records and custom classes
-        return clazz.isRecord() || clazz.getName().startsWith("com.example");
+    private boolean hasValidAnnotation(Parameter parameter) {
+        return parameter.isAnnotationPresent(Valid.class);
     }
 }
 ```
@@ -189,13 +178,14 @@ public class ValidationExceptionMapper implements ExceptionMapper<ValidationExce
 
 ## Step 5: Use in Your REST Resources
 
-Apply `@ValidateDTO` to methods that need automatic validation:
+Apply `@ValidateDTO` to methods and `@Valid` to parameters that need validation:
 
 ```java
 package com.example.resource;
 
 import com.example.dto.UserDTO;
 import com.example.validation.ValidateDTO;
+import io.github.emmajiugo.javalidator.annotations.Valid;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -207,7 +197,7 @@ public class UserResource {
 
     @POST
     @ValidateDTO
-    public Response createUser(UserDTO dto) {
+    public Response createUser(@Valid UserDTO dto) {
         // Validation happens automatically before this line
         // If validation fails, ValidationException is thrown
 
@@ -218,7 +208,7 @@ public class UserResource {
     @PUT
     @Path("/{id}")
     @ValidateDTO
-    public Response updateUser(@PathParam("id") Long id, UserDTO dto) {
+    public Response updateUser(@PathParam("id") Long id, @Valid UserDTO dto) {
         // Automatic validation
         return Response.ok(Map.of("message", "User updated successfully")).build();
     }
@@ -235,14 +225,14 @@ Apply to entire resource class:
 public class ProductResource {
 
     @POST
-    public Response create(ProductDTO dto) {
+    public Response create(@Valid ProductDTO dto) {
         // Automatically validated
         return Response.ok().build();
     }
 
     @PUT
     @Path("/{id}")
-    public Response update(@PathParam("id") Long id, ProductDTO dto) {
+    public Response update(@PathParam("id") Long id, @Valid ProductDTO dto) {
         // Automatically validated
         return Response.ok().build();
     }
@@ -307,19 +297,20 @@ package com.example.service;
 
 import com.example.dto.UserDTO;
 import com.example.validation.ValidateDTO;
+import io.github.emmajiugo.javalidator.annotations.Valid;
 import jakarta.enterprise.context.ApplicationScoped;
 
 @ApplicationScoped
 public class UserService {
 
     @ValidateDTO
-    public User createUser(UserDTO dto) {
+    public User createUser(@Valid UserDTO dto) {
         // Automatic validation before method execution
         return userRepository.persist(toEntity(dto));
     }
 
     @ValidateDTO
-    public User updateUser(Long id, UserDTO dto) {
+    public User updateUser(Long id, @Valid UserDTO dto) {
         // Automatic validation
         User user = userRepository.findById(id);
         user.update(dto);

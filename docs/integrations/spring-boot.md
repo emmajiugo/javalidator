@@ -33,9 +33,7 @@ That's it! The starter automatically configures:
 ```java
 import io.github.emmajiugo.javalidator.annotations.Rule;
 import io.github.emmajiugo.javalidator.annotations.RuleCascade;
-import io.github.emmajiugo.javalidator.annotations.Validate;
 
-@Validate
 public record UserDTO(
         @Rule("required|min:3|max:20")
         String username,
@@ -56,14 +54,15 @@ public record UserDTO(
 ```java
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import io.github.emmajiugo.javalidator.annotations.Valid;
 
 @RestController
 @RequestMapping("/api/users")
 public class UserController {
 
     @PostMapping
-    public ResponseEntity<String> createUser(@RequestBody UserDTO dto) {
-        // Validation happens automatically!
+    public ResponseEntity<String> createUser(@Valid @RequestBody UserDTO dto) {
+        // Validation happens automatically via @Valid!
         // If validation fails, a 400 response is returned
         return ResponseEntity.ok("User created: " + dto.username());
     }
@@ -71,13 +70,13 @@ public class UserController {
     @PutMapping("/{id}")
     public ResponseEntity<String> updateUser(
             @PathVariable Long id,
-            @RequestBody UserDTO dto) {
+            @Valid @RequestBody UserDTO dto) {
         return ResponseEntity.ok("User updated: " + dto.username());
     }
 }
 ```
 
-**Note**: The `@Validate` annotation on the DTO class is sufficient. The aspect detects it automatically.
+**Note**: Use `@Valid` on method parameters to trigger cascaded validation of the DTO's fields.
 
 ## Error Response Format
 
@@ -116,8 +115,9 @@ javalidator:
 
   aspect:
     enabled: true                        # Enable/disable AOP aspect (default: true)
-    validate-get-requests: false         # Validate GET parameters (default: false)
-    validate-delete-requests: false      # Validate DELETE parameters (default: false)
+    validate-get-requests: true          # Validate GET parameters (default: true)
+    validate-delete-requests: true       # Validate DELETE parameters (default: true)
+    validate-services: true              # Validate @Service/@Component with @Validated (default: true)
 
   exception-handler:
     enabled: true                        # Enable/disable exception handler (default: true)
@@ -125,6 +125,86 @@ javalidator:
     include-timestamp: true              # Include timestamp in response (default: true)
     message: "Validation failed"         # Custom error message (default: "Validation failed")
 ```
+
+## Service Layer Validation
+
+Javalidator supports validating method parameters in service classes, similar to Hibernate Validator. Use `@Validated` on the class and `@Valid`/`@Rule` on parameters.
+
+### Enable Service Validation
+
+Add `@Validated` to your service class:
+
+```java
+import io.github.emmajiugo.javalidator.annotations.Validated;
+import io.github.emmajiugo.javalidator.annotations.Valid;
+import io.github.emmajiugo.javalidator.annotations.Rule;
+import org.springframework.stereotype.Service;
+
+@Validated
+@Service
+public class UserService {
+
+    // Validate DTO fields with @Valid (cascaded validation)
+    public User createUser(@Valid CreateUserDTO request) {
+        // If validation fails, ValidationException is thrown
+        return userRepository.save(toEntity(request));
+    }
+
+    // Validate parameter directly with @Rule
+    public User findById(@Rule("gte:1") Long id) {
+        // id must be >= 1
+        return userRepository.findById(id)
+            .orElseThrow(() -> new UserNotFoundException(id));
+    }
+
+    // Combine both
+    public User updateUser(@Rule("gte:1") Long id, @Valid UpdateUserDTO request) {
+        // Both id and request are validated
+        User user = findById(id);
+        // update logic...
+        return user;
+    }
+}
+```
+
+### Annotations Reference
+
+| Annotation | Target | Purpose |
+|------------|--------|---------|
+| `@Validated` | Class (TYPE) | Enables method parameter validation for the class |
+| `@Valid` | Parameter | Triggers cascaded validation of object's fields |
+| `@Rule` | Parameter/Field | Validates the value directly with specified rules |
+
+### Method Parameter Validation with @Rule
+
+Use `@Rule` on method parameters to validate primitive values directly:
+
+```java
+@Validated
+@Service
+public class ProductService {
+
+    public List<Product> search(
+            @Rule("min:2|max:100") String query,       // String length validation
+            @Rule("gte:1|lte:100") Integer pageSize,   // Numeric range
+            @Rule("gte:0") Integer page                // Must be >= 0
+    ) {
+        return productRepository.search(query, page, pageSize);
+    }
+
+    public Product getProduct(@Rule("uuid") String productId) {
+        // productId must be a valid UUID format
+        return productRepository.findById(productId);
+    }
+}
+```
+
+### Important Notes
+
+- **RestController**: For `@RestController` classes, validation works automatically without `@Validated`
+- **Service/Component**: Must add `@Validated` to enable method parameter validation
+- **Conditional Rules**: Rules like `required_if`, `same`, `different` require DTO context and cannot be used on single parameters
+- **Enum Rule**: The `enum` rule requires `enumClass` parameter and only works on DTO fields, not method parameters
 
 ## Custom Validation Rules
 
@@ -166,7 +246,6 @@ public class NoReservedWordsRule implements ValidationRule {
 Use it in your DTO:
 
 ```java
-@Validate
 public record UserDTO(
         @Rule("required|min:3|noreservedwords")
         String username,
@@ -285,7 +364,7 @@ If you prefer manual configuration or need more control, see the [Manual Spring 
 
 ```java
 import io.github.emmajiugo.javalidator.Validator;
-import io.github.emmajiugo.javalidator.annotations.Validate;
+import io.github.emmajiugo.javalidator.annotations.Valid;
 import io.github.emmajiugo.javalidator.exception.ValidationException;
 import io.github.emmajiugo.javalidator.model.ValidationResponse;
 import org.aspectj.lang.JoinPoint;
@@ -323,8 +402,7 @@ public class ValidationAspect {
     }
 
     private boolean shouldValidate(Parameter param) {
-        return param.isAnnotationPresent(Validate.class) ||
-               param.getType().isAnnotationPresent(Validate.class);
+        return param.isAnnotationPresent(Valid.class);
     }
 }
 ```
@@ -371,7 +449,7 @@ public class GlobalExceptionHandler {
 | Problem | Solution |
 |---------|----------|
 | Aspect not triggered | Ensure `spring-boot-starter-aop` is in dependencies |
-| GET requests not validated | By design, only POST/PUT/PATCH are validated. Enable via `javalidator.aspect.validate-get-requests=true` |
+| GET requests not validated | Check `javalidator.aspect.validate-get-requests` property (default: true) |
 | Custom rule not registered | Ensure it's annotated with `@Component` or defined as a `@Bean` |
 | Entire validation disabled | Check `javalidator.enabled` property |
 

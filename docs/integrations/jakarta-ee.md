@@ -64,10 +64,12 @@ import jakarta.interceptor.AroundInvoke;
 import jakarta.interceptor.Interceptor;
 import jakarta.interceptor.InvocationContext;
 import io.github.emmajiugo.javalidator.Validator;
+import io.github.emmajiugo.javalidator.annotations.Valid;
 import io.github.emmajiugo.javalidator.exception.ValidationException;
 import io.github.emmajiugo.javalidator.model.ValidationResponse;
 
 import java.io.Serializable;
+import java.lang.reflect.Parameter;
 
 /**
  * Jakarta EE Interceptor for automatic DTO validation using Javalidator.
@@ -81,15 +83,17 @@ public class ValidationInterceptor implements Serializable {
 
     @AroundInvoke
     public Object validateParameters(InvocationContext context) throws Exception {
-        Object[] parameters = context.getParameters();
+        Parameter[] parameters = context.getMethod().getParameters();
+        Object[] args = context.getParameters();
 
-        // Validate all parameters that are DTOs
-        for (Object parameter : parameters) {
-            if (parameter != null && shouldValidate(parameter)) {
-                ValidationResponse response = Validator.validate(parameter);
-
-                if (!response.valid()) {
-                    throw new ValidationException(response.errors());
+        for (int i = 0; i < parameters.length; i++) {
+            if (hasValidAnnotation(parameters[i])) {
+                Object arg = args[i];
+                if (arg != null) {
+                    ValidationResponse response = Validator.validate(arg);
+                    if (!response.valid()) {
+                        throw new ValidationException(response.errors());
+                    }
                 }
             }
         }
@@ -97,22 +101,8 @@ public class ValidationInterceptor implements Serializable {
         return context.proceed();
     }
 
-    /**
-     * Determine if parameter should be validated.
-     * Validate records and custom domain objects only.
-     */
-    private boolean shouldValidate(Object parameter) {
-        Class<?> clazz = parameter.getClass();
-
-        // Skip primitives, wrappers, and standard Java types
-        if (clazz.isPrimitive() ||
-            clazz.getName().startsWith("java.lang") ||
-            clazz.getName().startsWith("java.util")) {
-            return false;
-        }
-
-        // Validate records and application classes
-        return true;
+    private boolean hasValidAnnotation(Parameter parameter) {
+        return parameter.isAnnotationPresent(Valid.class);
     }
 }
 ```
@@ -186,13 +176,14 @@ public class ValidationExceptionMapper implements ExceptionMapper<ValidationExce
 
 ## Step 5: Use in JAX-RS Resources
 
-Apply `@ValidateDTO` to REST endpoints:
+Apply `@ValidateDTO` to REST endpoints and `@Valid` to parameters:
 
 ```java
 package com.example.rest;
 
 import com.example.dto.UserDTO;
 import com.example.validation.ValidateDTO;
+import io.github.emmajiugo.javalidator.annotations.Valid;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
@@ -208,7 +199,7 @@ public class UserResource {
 
     @POST
     @ValidateDTO
-    public Response createUser(UserDTO dto) {
+    public Response createUser(@Valid UserDTO dto) {
         // Validation happens automatically before this line
         // If validation fails, ValidationException is thrown
 
@@ -219,7 +210,7 @@ public class UserResource {
     @PUT
     @Path("/{id}")
     @ValidateDTO
-    public Response updateUser(@PathParam("id") Long id, UserDTO dto) {
+    public Response updateUser(@PathParam("id") Long id, @Valid UserDTO dto) {
         // Automatic validation
         return Response.ok(Map.of("message", "User updated successfully")).build();
     }
@@ -235,6 +226,7 @@ package com.example.service;
 
 import com.example.dto.UserDTO;
 import com.example.validation.ValidateDTO;
+import io.github.emmajiugo.javalidator.annotations.Valid;
 import jakarta.ejb.Stateless;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -246,7 +238,7 @@ public class UserService {
     private EntityManager em;
 
     @ValidateDTO
-    public User createUser(UserDTO dto) {
+    public User createUser(@Valid UserDTO dto) {
         // Automatic validation before method execution
         User user = new User();
         user.setUsername(dto.username());
@@ -258,7 +250,7 @@ public class UserService {
     }
 
     @ValidateDTO
-    public User updateUser(Long id, UserDTO dto) {
+    public User updateUser(Long id, @Valid UserDTO dto) {
         // Automatic validation
         User user = em.find(User.class, id);
         user.setUsername(dto.username());
@@ -411,13 +403,13 @@ Apply to entire class:
 public class ProductResource {
 
     @POST
-    public Response create(ProductDTO dto) {
+    public Response create(@Valid ProductDTO dto) {
         return Response.ok().build();
     }
 
     @PUT
     @Path("/{id}")
-    public Response update(@PathParam("id") Long id, ProductDTO dto) {
+    public Response update(@PathParam("id") Long id, @Valid ProductDTO dto) {
         return Response.ok().build();
     }
 }
@@ -433,7 +425,7 @@ Skip validation for specific methods:
 public class UserService {
 
     @ValidateDTO
-    public void createUser(UserDTO dto) {
+    public void createUser(@Valid UserDTO dto) {
         // Validated
     }
 
@@ -451,7 +443,7 @@ Combine with manual validation:
 ```java
 @POST
 @ValidateDTO
-public Response create(UserDTO dto) {
+public Response create(@Valid UserDTO dto) {
     // Automatic validation already passed
 
     // Additional business validation

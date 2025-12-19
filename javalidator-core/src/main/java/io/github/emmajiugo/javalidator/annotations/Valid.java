@@ -3,16 +3,17 @@ package io.github.emmajiugo.javalidator.annotations;
 import java.lang.annotation.*;
 
 /**
- * Marker annotation for automatic validation in framework adapters.
+ * Marks a method parameter for cascaded validation.
  *
- * <p>When used with framework-specific adapters (Spring, Quarkus, etc.),
- * this annotation triggers automatic validation of annotated parameters.
+ * <p>When applied to a method parameter, triggers validation of the object's
+ * internal fields annotated with {@link Rule}. This follows the Jakarta Bean
+ * Validation {@code @Valid} convention.
  *
  * <p>Example usage with Spring:
  * <pre>
  * {@code
  * @PostMapping("/users")
- * public ResponseEntity<User> createUser(@Validate @RequestBody CreateUserDTO request) {
+ * public ResponseEntity<User> createUser(@Valid @RequestBody CreateUserDTO request) {
  *     // If we reach here, validation passed
  *     return ResponseEntity.ok(userService.create(request));
  * }
@@ -21,8 +22,11 @@ import java.lang.annotation.*;
  *
  * <p>For manual validation without framework integration, use the
  * {@code Validator.validate()} method directly instead.
+ *
+ * @see Validated
+ * @see Rule
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.PARAMETER, ElementType.TYPE})
-public @interface Validate {
+@Target(ElementType.PARAMETER)
+public @interface Valid {
 }

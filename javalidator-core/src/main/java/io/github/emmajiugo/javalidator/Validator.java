@@ -126,6 +126,98 @@ public final class Validator {
         }
     }
 
+    /**
+     * Validates a single value against the specified rules.
+     *
+     * <p>This method is useful for validating method parameters directly,
+     * without wrapping them in a DTO object. It is used internally by
+     * framework adapters when {@link io.github.emmajiugo.javalidator.annotations.Rule}
+     * is applied to method parameters.
+     *
+     * <p>Example:
+     * <pre>{@code
+     * ValidationResponse response = Validator.validateValue(userId, "required|min:1", "userId");
+     * if (!response.valid()) {
+     *     // Handle validation error
+     * }
+     * }</pre>
+     *
+     * <p><strong>Note:</strong> Conditional rules (like {@code required_if}, {@code same},
+     * {@code different}) that require access to other fields cannot be used with this method
+     * and will throw an {@link IllegalArgumentException}.
+     *
+     * @param value the value to validate
+     * @param rules the validation rules (pipe-separated, e.g., "required|min:1")
+     * @param fieldName the name to use in error messages (typically the parameter name)
+     * @return a ValidationResponse containing validation results
+     * @throws IllegalArgumentException if a conditional rule is used that requires DTO context
+     */
+    public static ValidationResponse validateValue(Object value, String rules, String fieldName) {
+        ensureInitialized();
+
+        if (rules == null || rules.isBlank()) {
+            return ValidationResponse.success();
+        }
+
+        List<String> errors = new ArrayList<>();
+        String[] ruleDefinitions = rules.split("\\|");
+
+        for (String ruleDefinition : ruleDefinitions) {
+            String trimmed = ruleDefinition.trim();
+            if (trimmed.isEmpty()) {
+                continue;
+            }
+
+            RuleDefinition parsed = RuleDefinition.parse(trimmed);
+            ValidationRule rule = RuleRegistry.getRequiredRule(parsed.name());
+
+            // Conditional rules require DTO context - not supported for single value validation
+            if (rule instanceof ConditionalValidationRule) {
+                throw new IllegalArgumentException(
+                        "Rule '" + parsed.name() + "' requires DTO context and cannot be used " +
+                        "for single value validation. Use object validation with Validator.validate() instead.");
+            }
+
+            // EnumRule requires enumClass from annotation - not supported for single value validation
+            if (rule instanceof io.github.emmajiugo.javalidator.rules.EnumRule) {
+                throw new IllegalArgumentException(
+                        "The 'enum' rule requires an enumClass parameter from @Rule annotation " +
+                        "and cannot be used with validateValue(). Use object validation instead.");
+            }
+
+            String error = rule.validate(fieldName, value, parsed.parameter());
+            if (error != null) {
+                errors.add(error);
+            }
+        }
+
+        if (errors.isEmpty()) {
+            return ValidationResponse.success();
+        }
+
+        return ValidationResponse.failure(List.of(new ValidationError(fieldName, errors)));
+    }
+
+    /**
+     * Validates a single value and throws an exception if validation fails.
+     *
+     * <p>This is a convenience method that calls {@link #validateValue(Object, String, String)}
+     * and throws a {@link ValidationException} if the value fails validation.
+     *
+     * @param value the value to validate
+     * @param rules the validation rules (pipe-separated, e.g., "required|min:1")
+     * @param fieldName the name to use in error messages (typically the parameter name)
+     * @throws ValidationException if validation fails
+     * @throws IllegalArgumentException if a conditional rule is used that requires DTO context
+     * @see #validateValue(Object, String, String)
+     */
+    public static void validateValueOrThrow(Object value, String rules, String fieldName) {
+        ValidationResponse response = validateValue(value, rules, fieldName);
+        if (!response.valid()) {
+            throw new ValidationException("Validation failed for " + fieldName, response.errors());
+        }
+    }
+
     private static List<ValidationError> validateRecord(Object dto, Class<?> clazz) {
         List<ValidationError> errors = new ArrayList<>();
 

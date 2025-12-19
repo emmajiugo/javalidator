@@ -3,13 +3,13 @@ package io.github.emmajiugo.javalidator.annotations;
 import java.lang.annotation.*;
 
 /**
- * Annotation for defining validation rules on fields or record components.
+ * Annotation for defining validation rules on fields, record components, or method parameters.
  *
  * <p>Rules can be specified using a pipe-separated format similar to Laravel's validation.
  * For example: {@code @Rule("required|min:3|max:20")}
  *
  * <p>This annotation is repeatable (Java 8+), allowing multiple rules with different
- * custom messages to be applied to the same field:
+ * custom messages to be applied to the same element:
  * <pre>{@code
  * @Rule(value = "required", message = "Username is required")
  * @Rule(value = "min:3", message = "Username must be at least 3 characters")
@@ -18,14 +18,30 @@ import java.lang.annotation.*;
  *
  * <p>For enum validation, use the type-safe enumClass parameter:
  * <pre>{@code
+ * public enum Status { ACTIVE, INACTIVE, PENDING }
+ *
  * @Rule(value = "enum", enumClass = Status.class)
- * String status;
+ * String status;  // Must be "ACTIVE", "INACTIVE", or "PENDING"
+ * }</pre>
+ *
+ * <p>When used on method parameters (requires {@link Validated} on the class for
+ * non-controller classes), the parameter value is validated directly:
+ * <pre>{@code
+ * @Validated
+ * @Service
+ * public class UserService {
+ *     public User findById(@Rule("min:1") Long id) {
+ *         // id must be >= 1
+ *     }
+ * }
  * }</pre>
  *
  * @see Rules
+ * @see Valid
+ * @see Validated
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.FIELD, ElementType.RECORD_COMPONENT})
+@Target({ElementType.FIELD, ElementType.RECORD_COMPONENT, ElementType.PARAMETER})
 @Repeatable(Rules.class)
 public @interface Rule {
     /**

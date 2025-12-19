@@ -4,16 +4,15 @@ import jakarta.interceptor.AroundInvoke;
 import jakarta.interceptor.Interceptor;
 import jakarta.interceptor.InvocationContext;
 import io.github.emmajiugo.javalidator.Validator;
-import io.github.emmajiugo.javalidator.annotations.Validate;
+import io.github.emmajiugo.javalidator.annotations.Valid;
 import io.github.emmajiugo.javalidator.exception.ValidationException;
 import io.github.emmajiugo.javalidator.model.ValidationResponse;
 
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Parameter;
 
 /**
  * Quarkus CDI Interceptor that automatically validates method parameters
- * annotated with @Validate.
+ * annotated with @Valid.
  */
 @Interceptor
 @ValidateBinding
@@ -25,7 +24,7 @@ public class ValidationInterceptor {
         Object[] args = context.getParameters();
 
         for (int i = 0; i < parameters.length; i++) {
-            if (hasValidateAnnotation(parameters[i])) {
+            if (hasValidAnnotation(parameters[i])) {
                 Object arg = args[i];
                 if (arg != null) {
                     ValidationResponse response = Validator.validate(arg);
@@ -39,12 +38,7 @@ public class ValidationInterceptor {
         return context.proceed();
     }
 
-    private boolean hasValidateAnnotation(Parameter parameter) {
-        for (Annotation annotation : parameter.getAnnotations()) {
-            if (annotation instanceof Validate) {
-                return true;
-            }
-        }
-        return false;
+    private boolean hasValidAnnotation(Parameter parameter) {
+        return parameter.isAnnotationPresent(Valid.class);
     }
 }

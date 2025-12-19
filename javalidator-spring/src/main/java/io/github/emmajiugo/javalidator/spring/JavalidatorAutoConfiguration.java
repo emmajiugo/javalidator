@@ -109,11 +109,11 @@ public class JavalidatorAutoConfiguration {
 
     /**
      * AOP-based validation configuration.
-     * Only activated when Spring AOP is on the classpath and web application is present.
+     * Activated when Spring AOP is on the classpath.
+     * Works in both web and non-web contexts to support service-layer validation.
      */
     @Configuration(proxyBeanMethods = false)
     @ConditionalOnClass(name = "org.aspectj.lang.annotation.Aspect")
-    @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
     @ConditionalOnProperty(prefix = "javalidator.aspect", name = "enabled", havingValue = "true", matchIfMissing = true)
     static class AspectConfiguration {
 

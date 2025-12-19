@@ -3,7 +3,7 @@ package example;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import io.github.emmajiugo.javalidator.annotations.Validate;
+import io.github.emmajiugo.javalidator.annotations.Valid;
 
 @Path("/users")
 @Produces(MediaType.APPLICATION_JSON)
@@ -12,7 +12,7 @@ public class UserResource {
 
     @POST
     @ValidateBinding
-    public Response createUser(@Validate UserDTO userDTO) {
+    public Response createUser(@Valid UserDTO userDTO) {
         // Validation happens automatically via ValidationInterceptor
         // If we reach here, validation passed
 

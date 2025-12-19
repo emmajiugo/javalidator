@@ -28,7 +28,7 @@ import java.lang.annotation.*;
  * @see Rule
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.FIELD, ElementType.RECORD_COMPONENT})
+@Target({ElementType.FIELD, ElementType.RECORD_COMPONENT, ElementType.PARAMETER})
 public @interface Rules {
     /**
      * Array of Rule annotations.
