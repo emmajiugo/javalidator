@@ -112,6 +112,7 @@ javalidator:
   enabled: true                          # Enable/disable entire auto-config (default: true)
   max-class-hierarchy-depth: 10          # Security: max inheritance depth (default: 10)
   validate-field-names: true             # Security: validate field names (default: true)
+  strict-mode: false                     # Fail-fast on config errors (default: false)
 
   aspect:
     enabled: true                        # Enable/disable AOP aspect (default: true)
@@ -125,6 +126,33 @@ javalidator:
     include-timestamp: true              # Include timestamp in response (default: true)
     message: "Validation failed"         # Custom error message (default: "Validation failed")
 ```
+
+### Strict Mode
+
+Controls how configuration errors are handled:
+
+**Production (strict-mode: false - default):**
+- Configuration errors become validation errors
+- Service never crashes due to misconfigured rules
+- Errors prefixed with `[CONFIG ERROR]` in response
+
+**Development/Testing (strict-mode: true):**
+- Configuration errors throw `IllegalArgumentException`
+- Fail-fast behavior catches issues early
+- Use in test environments to catch misconfigured rules
+
+**Example:**
+```yaml
+# application-dev.yml
+javalidator:
+  strict-mode: true  # Catch config errors during development
+
+# application-prod.yml
+javalidator:
+  strict-mode: false  # Prevent crashes in production (default)
+```
+
+See the [Security Guide](../security.md#5-configuration-error-handling-strict-mode) for more details.
 
 ## Service Layer Validation
 
@@ -275,7 +303,8 @@ public class ValidationConfig {
         return builder -> builder
                 .maxClassHierarchyDepth(15)
                 .validateFieldNames(true)
-                .fieldNamePattern("^[a-zA-Z_][a-zA-Z0-9_]*$");
+                .fieldNamePattern("^[a-zA-Z_][a-zA-Z0-9_]*$")
+                .strictMode(false);  // Graceful error handling for production
     }
 }
 ```
