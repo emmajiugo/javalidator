@@ -69,7 +69,7 @@ import jakarta.interceptor.Interceptor;
 import jakarta.interceptor.InvocationContext;
 import io.github.emmajiugo.javalidator.Validator;
 import io.github.emmajiugo.javalidator.annotations.Valid;
-import io.github.emmajiugo.javalidator.exception.ValidationException;
+import io.github.emmajiugo.javalidator.exception.NotValidException;
 import io.github.emmajiugo.javalidator.model.ValidationResponse;
 
 import java.lang.reflect.Parameter;
@@ -93,7 +93,7 @@ public class ValidationInterceptor {
                 if (arg != null) {
                     ValidationResponse response = Validator.validate(arg);
                     if (!response.valid()) {
-                        throw new ValidationException(response.errors());
+                        throw new NotValidException(response.errors());
                     }
                 }
             }
@@ -138,7 +138,7 @@ package com.example.validation;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.ext.ExceptionMapper;
 import jakarta.ws.rs.ext.Provider;
-import io.github.emmajiugo.javalidator.exception.ValidationException;
+import io.github.emmajiugo.javalidator.exception.NotValidException;
 import io.github.emmajiugo.javalidator.model.ValidationError;
 
 import java.time.LocalDateTime;
@@ -147,13 +147,13 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * JAX-RS Exception Mapper for ValidationException.
+ * JAX-RS Exception Mapper for NotValidException.
  */
 @Provider
-public class ValidationExceptionMapper implements ExceptionMapper<ValidationException> {
+public class ValidationExceptionMapper implements ExceptionMapper<NotValidException> {
 
     @Override
-    public Response toResponse(ValidationException exception) {
+    public Response toResponse(NotValidException exception) {
         Map<String, Object> response = new HashMap<>();
         response.put("timestamp", LocalDateTime.now().toString());
         response.put("status", 400);
@@ -199,7 +199,7 @@ public class UserResource {
     @ValidateDTO
     public Response createUser(@Valid UserDTO dto) {
         // Validation happens automatically before this line
-        // If validation fails, ValidationException is thrown
+        // If validation fails, NotValidException is thrown
 
         // Your business logic here
         return Response.ok(Map.of("message", "User created successfully")).build();
@@ -330,7 +330,7 @@ Customize the exception mapper:
 public class CustomValidationExceptionMapper implements ExceptionMapper<ValidationException> {
 
     @Override
-    public Response toResponse(ValidationException exception) {
+    public Response toResponse(NotValidException exception) {
         return Response
                 .status(422) // Unprocessable Entity
                 .entity(Map.of(
@@ -357,7 +357,7 @@ public Response create(
     if (shouldValidate) {
         ValidationResponse response = Validator.validate(dto);
         if (!response.valid()) {
-            throw new ValidationException(response.errors());
+            throw new NotValidException(response.errors());
         }
     }
 

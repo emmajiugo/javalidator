@@ -3,7 +3,7 @@ package io.github.emmajiugo.javalidator;
 import io.github.emmajiugo.javalidator.annotations.Rule;
 import io.github.emmajiugo.javalidator.annotations.RuleCascade;
 import io.github.emmajiugo.javalidator.config.ValidationConfig;
-import io.github.emmajiugo.javalidator.exception.ValidationException;
+import io.github.emmajiugo.javalidator.exception.NotValidException;
 import io.github.emmajiugo.javalidator.model.ValidationError;
 import io.github.emmajiugo.javalidator.model.ValidationResponse;
 import io.github.emmajiugo.javalidator.rules.EnumRule;
@@ -117,12 +117,12 @@ public final class Validator {
      * Validates an object and throws an exception if validation fails.
      *
      * @param dto the object to validate
-     * @throws ValidationException if validation fails
+     * @throws NotValidException if validation fails
      */
     public static void validateOrThrow(Object dto) {
         ValidationResponse response = validate(dto);
         if (!response.valid()) {
-            throw new ValidationException("Validation failed", response.errors());
+            throw new NotValidException("Validation failed", response.errors());
         }
     }
 
@@ -215,19 +215,19 @@ public final class Validator {
      * Validates a single value and throws an exception if validation fails.
      *
      * <p>This is a convenience method that calls {@link #validateValue(Object, String, String)}
-     * and throws a {@link ValidationException} if the value fails validation.
+     * and throws a {@link NotValidException} if the value fails validation.
      *
      * @param value the value to validate
      * @param rules the validation rules (pipe-separated, e.g., "required|min:1")
      * @param fieldName the name to use in error messages (typically the parameter name)
-     * @throws ValidationException if validation fails
+     * @throws NotValidException if validation fails
      * @throws IllegalArgumentException if a conditional rule is used that requires DTO context
      * @see #validateValue(Object, String, String)
      */
     public static void validateValueOrThrow(Object value, String rules, String fieldName) {
         ValidationResponse response = validateValue(value, rules, fieldName);
         if (!response.valid()) {
-            throw new ValidationException("Validation failed for " + fieldName, response.errors());
+            throw new NotValidException("Validation failed for " + fieldName, response.errors());
         }
     }
 

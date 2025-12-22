@@ -184,7 +184,7 @@ public Response createUser(@Validate UserDTO dto) {
 ```
 
 ### 4. Handle errors globally
-All frameworks throw `ValidationException` → caught by global handler
+All frameworks throw `NotValidException` → caught by global handler
 
 ## Error Response
 

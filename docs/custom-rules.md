@@ -423,7 +423,7 @@ public class EmailRule implements ValidationRule {
 
 ### Alternative: Using validateOrThrow()
 
-For cleaner code, use `Validator.validateOrThrow(dto)` which throws a `ValidationException` on failure. See the [framework integration guides](integrations/) for complete examples with exception handling.
+For cleaner code, use `Validator.validateOrThrow(dto)` which throws a `NotValidException` on failure. See the [framework integration guides](integrations/) for complete examples with exception handling.
 
 | Approach | Use When |
 |----------|----------|

@@ -51,7 +51,7 @@ public final class RuleRegistry {
      * @throws IllegalArgumentException if any rule is null or has blank name
      */
     public static void register(ValidationRule... rulesToRegister) {
-        if (rulesToRegister == null || rulesToRegister.length == 0) {
+        if (rulesToRegister == null) {
             return;
         }
         for (ValidationRule rule : rulesToRegister) {

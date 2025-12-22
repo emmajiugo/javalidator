@@ -5,7 +5,7 @@ import jakarta.interceptor.Interceptor;
 import jakarta.interceptor.InvocationContext;
 import io.github.emmajiugo.javalidator.Validator;
 import io.github.emmajiugo.javalidator.annotations.Valid;
-import io.github.emmajiugo.javalidator.exception.ValidationException;
+import io.github.emmajiugo.javalidator.exception.NotValidException;
 import io.github.emmajiugo.javalidator.model.ValidationResponse;
 
 import java.lang.reflect.Parameter;
@@ -29,7 +29,7 @@ public class ValidationInterceptor {
                 if (arg != null) {
                     ValidationResponse response = Validator.validate(arg);
                     if (!response.valid()) {
-                        throw new ValidationException(response.errors());
+                        throw new NotValidException(response.errors());
                     }
                 }
             }

@@ -4,7 +4,7 @@ import io.github.emmajiugo.javalidator.Validator;
 import io.github.emmajiugo.javalidator.annotations.Rule;
 import io.github.emmajiugo.javalidator.annotations.Valid;
 import io.github.emmajiugo.javalidator.annotations.Validated;
-import io.github.emmajiugo.javalidator.exception.ValidationException;
+import io.github.emmajiugo.javalidator.exception.NotValidException;
 import io.github.emmajiugo.javalidator.model.ValidationError;
 import io.github.emmajiugo.javalidator.model.ValidationResponse;
 import io.github.emmajiugo.javalidator.spring.JavalidatorProperties;
@@ -210,7 +210,7 @@ public class ValidationAspect {
         }
 
         if (!allErrors.isEmpty()) {
-            throw new ValidationException(allErrors);
+            throw new NotValidException(allErrors);
         }
     }
 
