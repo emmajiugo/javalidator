@@ -52,7 +52,6 @@
         <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <assertj.version>3.27.6</assertj.version>
-        <spring-boot.version>3.5.8</spring-boot.version>
 
         <!-- Skip deployment by default (override in javalidator-core and javalidator-spring) -->
         <maven.deploy.skip>true</maven.deploy.skip>
@@ -98,7 +97,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-deploy-plugin</artifactId>
-                    <version>3.1.1</version>
+                    <version>3.1.4</version>
                     <configuration>
                         <skip>${maven.deploy.skip}</skip>
                     </configuration>
@@ -106,7 +105,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-source-plugin</artifactId>
-                    <version>3.3.1</version>
+                    <version>3.4.0</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
@@ -129,7 +128,7 @@
                 <plugin>
                     <groupId>org.codehaus.mojo</groupId>
                     <artifactId>flatten-maven-plugin</artifactId>
-                    <version>1.6.0</version>
+                    <version>1.7.3</version>
                 </plugin>
             </plugins>
         </pluginManagement>

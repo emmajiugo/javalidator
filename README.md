@@ -235,8 +235,13 @@ Javalidator includes built-in security protections:
 - **Pattern caching** - No ReDoS risk (patterns defined at compile-time)
 - **Field name validation** - Prevents injection attacks
 - **Reflection depth limiting** - Prevents memory exhaustion
+- **Configuration error handling** - Graceful degradation prevents production crashes
 
-Use `ValidationConfig.strict()` for production environments. See the **[Security Guide](docs/security.md)** for configuration options and best practices.
+**Strict Mode**: Control how configuration errors are handled
+- **Production (default)**: Configuration errors become validation errors (no crashes)
+- **Development/Testing**: Enable strict mode to catch misconfigured rules early
+
+See the **[Security Guide](docs/security.md)** for configuration options and best practices.
 
 ## Contributing
 

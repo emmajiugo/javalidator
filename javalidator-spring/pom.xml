@@ -17,6 +17,7 @@
     <description>Springboot auto-configuration for Javalidator validation library</description>
 
     <properties>
+        <spring-boot.version>3.5.9</spring-boot.version>
         <!-- Enable deployment for this module -->
         <maven.deploy.skip>false</maven.deploy.skip>
         <central.publishing.skip>false</central.publishing.skip>

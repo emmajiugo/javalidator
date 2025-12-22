@@ -172,6 +172,7 @@ public final class Validator {
             ValidationRule rule = RuleRegistry.getRequiredRule(parsed.name());
 
             // Conditional rules require DTO context - not supported for single value validation
+            // These are unsupported operations, not configuration errors - always throw
             if (rule instanceof ConditionalValidationRule) {
                 throw new IllegalArgumentException(
                         "Rule '" + parsed.name() + "' requires DTO context and cannot be used " +
@@ -179,15 +180,27 @@ public final class Validator {
             }
 
             // EnumRule requires enumClass from annotation - not supported for single value validation
+            // This is an unsupported operation, not a configuration error - always throw
             if (rule instanceof io.github.emmajiugo.javalidator.rules.EnumRule) {
                 throw new IllegalArgumentException(
                         "The 'enum' rule requires an enumClass parameter from @Rule annotation " +
                         "and cannot be used with validateValue(). Use object validation instead.");
             }
 
-            String error = rule.validate(fieldName, value, parsed.parameter());
-            if (error != null) {
-                errors.add(error);
+            try {
+                String error = rule.validate(fieldName, value, parsed.parameter());
+                if (error != null) {
+                    errors.add(error);
+                }
+            } catch (IllegalArgumentException e) {
+                // Configuration error detected (e.g., missing parameter, invalid rule)
+                if (config.isStrictMode()) {
+                    // Strict mode: re-throw exception for fail-fast behavior
+                    throw e;
+                } else {
+                    // Graceful mode: convert to validation error to prevent crashes
+                    errors.add("[CONFIG ERROR] " + e.getMessage());
+                }
             }
         }
 
@@ -289,17 +302,28 @@ public final class Validator {
     private static String applyRule(
             String fieldName, Object value, String ruleDefinition, Rule ruleAnnotation, Object dto) {
 
-        RuleDefinition parsed = RuleDefinition.parse(ruleDefinition);
-        ValidationRule rule = RuleRegistry.getRequiredRule(parsed.name());
+        try {
+            RuleDefinition parsed = RuleDefinition.parse(ruleDefinition);
+            ValidationRule rule = RuleRegistry.getRequiredRule(parsed.name());
 
-        String error = executeRule(rule, fieldName, value, parsed.parameter(), ruleAnnotation, dto);
+            String error = executeRule(rule, fieldName, value, parsed.parameter(), ruleAnnotation, dto);
 
-        // Return custom message if provided
-        if (error != null && !ruleAnnotation.message().isEmpty()) {
-            return ruleAnnotation.message();
+            // Return custom message if provided
+            if (error != null && !ruleAnnotation.message().isEmpty()) {
+                return ruleAnnotation.message();
+            }
+
+            return error;
+        } catch (IllegalArgumentException e) {
+            // Configuration error detected (e.g., missing parameter, invalid rule)
+            if (config.isStrictMode()) {
+                // Strict mode: re-throw exception for fail-fast behavior
+                throw e;
+            } else {
+                // Graceful mode: convert to validation error to prevent crashes
+                return "[CONFIG ERROR] " + e.getMessage();
+            }
         }
-
-        return error;
     }
 
     private static String executeRule(

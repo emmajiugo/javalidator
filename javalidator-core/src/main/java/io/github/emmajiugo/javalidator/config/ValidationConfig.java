@@ -18,11 +18,21 @@ package io.github.emmajiugo.javalidator.config;
  *       timeout overhead (ReDoS isn't a concern since developers control patterns at compile-time)</li>
  * </ul>
  *
+ * <h2>Configuration Error Handling</h2>
+ * <ul>
+ *   <li><b>Strict Mode (OFF by default)</b> - Controls how configuration errors are handled:
+ *     <ul>
+ *       <li>When FALSE (production): Configuration errors become validation errors, preventing crashes</li>
+ *       <li>When TRUE (development/testing): Configuration errors throw IllegalArgumentException immediately</li>
+ *     </ul>
+ *   </li>
+ * </ul>
+ *
  * <h2>Configuration Presets</h2>
  * <ul>
- *   <li><b>defaults()</b> - Balanced security and performance for production use</li>
- *   <li><b>strict()</b> - Maximum security with all protections enabled</li>
- *   <li><b>permissive()</b> - Minimal checks for development/testing environments</li>
+ *   <li><b>defaults()</b> - Balanced security and performance for production use (strictMode: false)</li>
+ *   <li><b>strict()</b> - Maximum security for development/testing (strictMode: true)</li>
+ *   <li><b>permissive()</b> - Minimal checks for development/testing environments (strictMode: false)</li>
  * </ul>
  *
  * <p>Example usage:
@@ -51,10 +61,14 @@ public class ValidationConfig {
     private final boolean validateFieldNames;
     private final String fieldNamePattern;
 
+    // Configuration error handling
+    private final boolean strictMode;
+
     private ValidationConfig(Builder builder) {
         this.maxClassHierarchyDepth = builder.maxClassHierarchyDepth;
         this.validateFieldNames = builder.validateFieldNames;
         this.fieldNamePattern = builder.fieldNamePattern;
+        this.strictMode = builder.strictMode;
     }
 
     /**
@@ -65,11 +79,13 @@ public class ValidationConfig {
     }
 
     /**
-     * Creates a strict configuration with maximum security.
+     * Creates a strict configuration for development/testing environments.
+     * Enables all security features and throws exceptions for configuration errors.
      */
     public static ValidationConfig strict() {
         return builder()
                 .validateFieldNames(true)
+                .strictMode(true)
                 .build();
     }
 
@@ -99,10 +115,15 @@ public class ValidationConfig {
         return fieldNamePattern;
     }
 
+    public boolean isStrictMode() {
+        return strictMode;
+    }
+
     public static class Builder {
         private int maxClassHierarchyDepth = 10;
         private boolean validateFieldNames = true;
         private String fieldNamePattern = "^[a-zA-Z_][a-zA-Z0-9_]*$";
+        private boolean strictMode = false;
 
         /**
          * Sets the maximum depth when traversing class hierarchy for fields.
@@ -128,6 +149,17 @@ public class ValidationConfig {
          */
         public Builder fieldNamePattern(String fieldNamePattern) {
             this.fieldNamePattern = fieldNamePattern;
+            return this;
+        }
+
+        /**
+         * Controls how configuration errors are handled.
+         * When true: throws IllegalArgumentException for configuration errors (fail-fast for development)
+         * When false: converts configuration errors to validation errors (production-safe)
+         * Default: false
+         */
+        public Builder strictMode(boolean strictMode) {
+            this.strictMode = strictMode;
             return this;
         }
 

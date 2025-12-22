@@ -11,6 +11,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  * javalidator.max-class-hierarchy-depth=10
  * javalidator.validate-field-names=true
  * javalidator.field-name-pattern=^[a-zA-Z_][a-zA-Z0-9_]*$
+ * javalidator.strict-mode=false
  * javalidator.aspect.enabled=true
  * javalidator.exception-handler.enabled=true
  * javalidator.exception-handler.include-path=true
@@ -40,6 +41,13 @@ public class JavalidatorProperties {
      * Regex pattern for valid field names.
      */
     private String fieldNamePattern = "^[a-zA-Z_][a-zA-Z0-9_]*$";
+
+    /**
+     * Controls how configuration errors are handled.
+     * When true: throws IllegalArgumentException for configuration errors (fail-fast for development)
+     * When false: converts configuration errors to validation errors (production-safe)
+     */
+    private boolean strictMode = false;
 
     /**
      * AOP aspect configuration.
@@ -81,6 +89,14 @@ public class JavalidatorProperties {
 
     public void setFieldNamePattern(String fieldNamePattern) {
         this.fieldNamePattern = fieldNamePattern;
+    }
+
+    public boolean isStrictMode() {
+        return strictMode;
+    }
+
+    public void setStrictMode(boolean strictMode) {
+        this.strictMode = strictMode;
     }
 
     public Aspect getAspect() {

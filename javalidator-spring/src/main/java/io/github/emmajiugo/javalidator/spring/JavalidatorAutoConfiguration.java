@@ -70,7 +70,8 @@ public class JavalidatorAutoConfiguration {
         ValidationConfig.Builder configBuilder = ValidationConfig.builder()
                 .maxClassHierarchyDepth(properties.getMaxClassHierarchyDepth())
                 .validateFieldNames(properties.isValidateFieldNames())
-                .fieldNamePattern(properties.getFieldNamePattern());
+                .fieldNamePattern(properties.getFieldNamePattern())
+                .strictMode(properties.isStrictMode());
 
         // Apply customizers
         customizers.ifAvailable(customizerList -> {
@@ -83,8 +84,8 @@ public class JavalidatorAutoConfiguration {
         ValidationConfig config = configBuilder.build();
         Validator.setConfig(config);
 
-        logger.info("Javalidator configured with maxClassHierarchyDepth={}, validateFieldNames={}",
-                config.getMaxClassHierarchyDepth(), config.isValidateFieldNames());
+        logger.info("Javalidator configured with maxClassHierarchyDepth={}, validateFieldNames={}, strictMode={}",
+                config.getMaxClassHierarchyDepth(), config.isValidateFieldNames(), config.isStrictMode());
 
         // Register custom rules
         customRules.ifAvailable(rules -> {
