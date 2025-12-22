@@ -65,7 +65,7 @@ import jakarta.interceptor.Interceptor;
 import jakarta.interceptor.InvocationContext;
 import io.github.emmajiugo.javalidator.Validator;
 import io.github.emmajiugo.javalidator.annotations.Valid;
-import io.github.emmajiugo.javalidator.exception.ValidationException;
+import io.github.emmajiugo.javalidator.exception.NotValidException;
 import io.github.emmajiugo.javalidator.model.ValidationResponse;
 
 import java.io.Serializable;
@@ -92,7 +92,7 @@ public class ValidationInterceptor implements Serializable {
                 if (arg != null) {
                     ValidationResponse response = Validator.validate(arg);
                     if (!response.valid()) {
-                        throw new ValidationException(response.errors());
+                        throw new NotValidException(response.errors());
                     }
                 }
             }
@@ -136,7 +136,7 @@ package com.example.validation;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.ext.ExceptionMapper;
 import jakarta.ws.rs.ext.Provider;
-import io.github.emmajiugo.javalidator.exception.ValidationException;
+import io.github.emmajiugo.javalidator.exception.NotValidException;
 import io.github.emmajiugo.javalidator.model.ValidationError;
 
 import java.time.LocalDateTime;
@@ -145,13 +145,13 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * JAX-RS Exception Mapper for ValidationException.
+ * JAX-RS Exception Mapper for NotValidException.
  */
 @Provider
-public class ValidationExceptionMapper implements ExceptionMapper<ValidationException> {
+public class ValidationExceptionMapper implements ExceptionMapper<NotValidException> {
 
     @Override
-    public Response toResponse(ValidationException exception) {
+    public Response toResponse(NotValidException exception) {
         Map<String, Object> response = new HashMap<>();
         response.put("timestamp", LocalDateTime.now().toString());
         response.put("status", Response.Status.BAD_REQUEST.getStatusCode());
@@ -201,7 +201,7 @@ public class UserResource {
     @ValidateDTO
     public Response createUser(@Valid UserDTO dto) {
         // Validation happens automatically before this line
-        // If validation fails, ValidationException is thrown
+        // If validation fails, NotValidExceptionis thrown
 
         // Your business logic here
         return Response.ok(Map.of("message", "User created successfully")).build();
@@ -465,10 +465,10 @@ Modify exception mapper:
 
 ```java
 @Provider
-public class CustomValidationMapper implements ExceptionMapper<ValidationException> {
+public class CustomValidationMapper implements ExceptionMapper<NotValidException> {
 
     @Override
-    public Response toResponse(ValidationException exception) {
+    public Response toResponse(NotValidException exception) {
         // Your custom format
         return Response.status(422)
                 .entity(new ErrorResponse("VALIDATION_ERROR", exception.getErrors()))
@@ -496,7 +496,7 @@ public class ValidationInterceptor implements Serializable {
         if (!response.valid()) {
             logger.warning("Validation failed for " + context.getMethod().getName() +
                           ": " + response.errors());
-            throw new ValidationException(response.errors());
+            throw new NotValidException(response.errors());
         }
 
         return context.proceed();

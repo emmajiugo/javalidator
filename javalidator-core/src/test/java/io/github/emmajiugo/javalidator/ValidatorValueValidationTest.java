@@ -1,6 +1,6 @@
 package io.github.emmajiugo.javalidator;
 
-import io.github.emmajiugo.javalidator.exception.ValidationException;
+import io.github.emmajiugo.javalidator.exception.NotValidException;
 import io.github.emmajiugo.javalidator.model.ValidationResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -201,10 +201,10 @@ class ValidatorValueValidationTest {
         }
 
         @Test
-        @DisplayName("should throw ValidationException when validation fails")
+        @DisplayName("should throw NotValidException when validation fails")
         void shouldThrowWhenInvalid() {
             assertThatThrownBy(() -> Validator.validateValueOrThrow(null, "required", "name"))
-                    .isInstanceOf(ValidationException.class)
+                    .isInstanceOf(NotValidException.class)
                     .hasMessageContaining("name");
         }
 
@@ -213,8 +213,8 @@ class ValidatorValueValidationTest {
         void shouldIncludeFieldNameInException() {
             try {
                 Validator.validateValueOrThrow("ab", "min:5", "username");
-                fail("Expected ValidationException");
-            } catch (ValidationException e) {
+                fail("Expected NotValidException");
+            } catch (NotValidException e) {
                 assertThat(e.getMessage()).contains("username");
                 assertThat(e.getErrors()).hasSize(1);
                 assertThat(e.getErrors().get(0).field()).isEqualTo("username");

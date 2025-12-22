@@ -3,7 +3,7 @@ package io.github.emmajiugo.javalidator.spring;
 import io.github.emmajiugo.javalidator.annotations.Rule;
 import io.github.emmajiugo.javalidator.annotations.Valid;
 import io.github.emmajiugo.javalidator.annotations.Validated;
-import io.github.emmajiugo.javalidator.exception.ValidationException;
+import io.github.emmajiugo.javalidator.exception.NotValidException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -42,25 +42,25 @@ class ValidatedServiceIntegrationTest {
         }
 
         @Test
-        @DisplayName("should throw ValidationException when DTO fields are invalid")
+        @DisplayName("should throw NotValidException when DTO fields are invalid")
         void shouldThrowWhenDtoFieldsInvalid() {
             TestUserDTO dto = new TestUserDTO("ab", "invalid-email", 15);
 
             assertThatThrownBy(() -> userService.createUser(dto))
-                    .isInstanceOf(ValidationException.class)
+                    .isInstanceOf(NotValidException.class)
                     .satisfies(ex -> {
-                        ValidationException ve = (ValidationException) ex;
+                        NotValidException ve = (NotValidException) ex;
                         assertThat(ve.getErrors()).isNotEmpty();
                     });
         }
 
         @Test
-        @DisplayName("should throw ValidationException when required field is null")
+        @DisplayName("should throw NotValidException when required field is null")
         void shouldThrowWhenRequiredFieldIsNull() {
             TestUserDTO dto = new TestUserDTO(null, "john@example.com", 25);
 
             assertThatThrownBy(() -> userService.createUser(dto))
-                    .isInstanceOf(ValidationException.class);
+                    .isInstanceOf(NotValidException.class);
         }
     }
 
@@ -77,22 +77,22 @@ class ValidatedServiceIntegrationTest {
         }
 
         @Test
-        @DisplayName("should throw ValidationException when parameter violates rule")
+        @DisplayName("should throw NotValidException when parameter violates rule")
         void shouldThrowWhenParameterViolatesRule() {
             assertThatThrownBy(() -> userService.findById(0L))
-                    .isInstanceOf(ValidationException.class)
+                    .isInstanceOf(NotValidException.class)
                     .satisfies(ex -> {
-                        ValidationException ve = (ValidationException) ex;
+                        NotValidException ve = (NotValidException) ex;
                         assertThat(ve.getErrors()).hasSize(1);
                         assertThat(ve.getErrors().get(0).field()).isEqualTo("id");
                     });
         }
 
         @Test
-        @DisplayName("should throw ValidationException when parameter is negative")
+        @DisplayName("should throw NotValidException when parameter is negative")
         void shouldThrowWhenParameterNegative() {
             assertThatThrownBy(() -> userService.findById(-5L))
-                    .isInstanceOf(ValidationException.class);
+                    .isInstanceOf(NotValidException.class);
         }
     }
 
@@ -116,7 +116,7 @@ class ValidatedServiceIntegrationTest {
             TestUserDTO dto = new TestUserDTO("johndoe", "john@example.com", 25);
 
             assertThatThrownBy(() -> userService.updateUser(0L, dto))
-                    .isInstanceOf(ValidationException.class);
+                    .isInstanceOf(NotValidException.class);
         }
 
         @Test
@@ -125,7 +125,7 @@ class ValidatedServiceIntegrationTest {
             TestUserDTO dto = new TestUserDTO("ab", "invalid", 10);
 
             assertThatThrownBy(() -> userService.updateUser(1L, dto))
-                    .isInstanceOf(ValidationException.class);
+                    .isInstanceOf(NotValidException.class);
         }
 
         @Test
@@ -134,9 +134,9 @@ class ValidatedServiceIntegrationTest {
             TestUserDTO dto = new TestUserDTO("ab", "invalid", 10);
 
             assertThatThrownBy(() -> userService.updateUser(0L, dto))
-                    .isInstanceOf(ValidationException.class)
+                    .isInstanceOf(NotValidException.class)
                     .satisfies(ex -> {
-                        ValidationException ve = (ValidationException) ex;
+                        NotValidException ve = (NotValidException) ex;
                         // Should have errors for both id and DTO fields
                         assertThat(ve.getErrors().size()).isGreaterThanOrEqualTo(1);
                     });
@@ -159,21 +159,21 @@ class ValidatedServiceIntegrationTest {
         @DisplayName("should throw when query is too short")
         void shouldThrowWhenQueryTooShort() {
             assertThatThrownBy(() -> userService.search("a", 1, 10))
-                    .isInstanceOf(ValidationException.class);
+                    .isInstanceOf(NotValidException.class);
         }
 
         @Test
         @DisplayName("should throw when page is invalid")
         void shouldThrowWhenPageInvalid() {
             assertThatThrownBy(() -> userService.search("test query", -1, 10))
-                    .isInstanceOf(ValidationException.class);
+                    .isInstanceOf(NotValidException.class);
         }
 
         @Test
         @DisplayName("should throw when pageSize is too large")
         void shouldThrowWhenPageSizeTooLarge() {
             assertThatThrownBy(() -> userService.search("test query", 1, 200))
-                    .isInstanceOf(ValidationException.class);
+                    .isInstanceOf(NotValidException.class);
         }
     }
 

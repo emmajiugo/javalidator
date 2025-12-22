@@ -16,31 +16,31 @@ import java.util.List;
  * {@code
  * ValidationResponse validation = Validator.validate(dto);
  * if (!validation.valid()) {
- *     throw new ValidationException(validation.errors());
+ *     throw new NotValidException(validation.errors());
  * }
  * }
  * </pre>
  */
-public class ValidationException extends RuntimeException {
+public class NotValidException extends RuntimeException {
     private final List<ValidationError> errors;
 
     /**
-     * Creates a new ValidationException with the given validation errors.
+     * Creates a new NotValidException with the given validation errors.
      *
      * @param errors the list of validation errors
      */
-    public ValidationException(List<ValidationError> errors) {
+    public NotValidException(List<ValidationError> errors) {
         super("Validation failed");
         this.errors = errors;
     }
 
     /**
-     * Creates a new ValidationException with a custom message and validation errors.
+     * Creates a new NotValidException with a custom message and validation errors.
      *
      * @param message the custom exception message
      * @param errors  the list of validation errors
      */
-    public ValidationException(String message, List<ValidationError> errors) {
+    public NotValidException(String message, List<ValidationError> errors) {
         super(message);
         this.errors = errors;
     }

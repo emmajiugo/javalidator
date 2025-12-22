@@ -1,7 +1,7 @@
 package example;
 
 import jakarta.ws.rs.core.Response;
-import io.github.emmajiugo.javalidator.exception.ValidationException;
+import io.github.emmajiugo.javalidator.exception.NotValidException;
 import io.github.emmajiugo.javalidator.model.ValidationError;
 import org.jboss.resteasy.reactive.server.ServerExceptionMapper;
 
@@ -11,7 +11,7 @@ import java.util.Map;
 public class ExceptionMappers {
 
     @ServerExceptionMapper
-    public Response mapValidationException(ValidationException exception) {
+    public Response mapValidationException(NotValidException exception) {
         Map<String, Object> errorResponse = new HashMap<>();
         errorResponse.put("status", "error");
         errorResponse.put("message", "Validation failed");

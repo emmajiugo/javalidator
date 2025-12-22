@@ -29,7 +29,7 @@ import java.util.List;
  * <ul>
  *   <li>ValidationConfig based on application properties</li>
  *   <li>ValidationAspect for AOP-based validation (if AOP is on classpath)</li>
- *   <li>GlobalExceptionHandler for converting ValidationException to HTTP 400</li>
+ *   <li>GlobalExceptionHandler for converting NotValidException to HTTP 400</li>
  *   <li>Automatic registration of custom ValidationRule beans</li>
  * </ul>
  *

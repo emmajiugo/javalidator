@@ -174,7 +174,7 @@ public class UserService {
 
     // Validate DTO fields with @Valid (cascaded validation)
     public User createUser(@Valid CreateUserDTO request) {
-        // If validation fails, ValidationException is thrown
+        // If validation fails, NotValidException is thrown
         return userRepository.save(toEntity(request));
     }
 
@@ -320,7 +320,7 @@ javalidator:
 ```
 
 ```java
-import io.github.emmajiugo.javalidator.exception.ValidationException;
+import io.github.emmajiugo.javalidator.exception.NotValidException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -328,8 +328,8 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @RestControllerAdvice
 public class CustomValidationHandler {
 
-    @ExceptionHandler(ValidationException.class)
-    public ResponseEntity<CustomErrorResponse> handleValidation(ValidationException ex) {
+    @ExceptionHandler(NotValidException.class)
+    public ResponseEntity<CustomErrorResponse> handleValidation(NotValidException ex) {
         return ResponseEntity.badRequest().body(
             new CustomErrorResponse("VALIDATION_ERROR", ex.getErrors())
         );
@@ -394,7 +394,7 @@ If you prefer manual configuration or need more control, see the [Manual Spring 
 ```java
 import io.github.emmajiugo.javalidator.Validator;
 import io.github.emmajiugo.javalidator.annotations.Valid;
-import io.github.emmajiugo.javalidator.exception.ValidationException;
+import io.github.emmajiugo.javalidator.exception.NotValidException;
 import io.github.emmajiugo.javalidator.model.ValidationResponse;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.Aspect;
@@ -424,7 +424,7 @@ public class ValidationAspect {
             if (arg != null && shouldValidate(param)) {
                 ValidationResponse response = Validator.validate(arg);
                 if (!response.valid()) {
-                    throw new ValidationException(response.errors());
+                    throw new NotValidException(response.errors());
                 }
             }
         }
@@ -439,7 +439,7 @@ public class ValidationAspect {
 ### Create Exception Handler
 
 ```java
-import io.github.emmajiugo.javalidator.exception.ValidationException;
+import io.github.emmajiugo.javalidator.exception.NotValidException;
 import io.github.emmajiugo.javalidator.model.ValidationError;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -452,8 +452,8 @@ import java.util.Map;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(ValidationException.class)
-    public ResponseEntity<Map<String, Object>> handleValidation(ValidationException ex) {
+    @ExceptionHandler(NotValidException.class)
+    public ResponseEntity<Map<String, Object>> handleValidation(NotValidException ex) {
         Map<String, Object> response = new HashMap<>();
         response.put("status", "error");
         response.put("message", "Validation failed");

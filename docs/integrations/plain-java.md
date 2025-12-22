@@ -332,7 +332,7 @@ package com.example.service;
 
 import com.example.dto.UserDTO;
 import io.github.emmajiugo.javalidator.Validator;
-import io.github.emmajiugo.javalidator.exception.ValidationException;
+import io.github.emmajiugo.javalidator.exception.NotValidException;
 import io.github.emmajiugo.javalidator.model.ValidationResponse;
 
 public class UserService {
@@ -342,7 +342,7 @@ public class UserService {
         ValidationResponse response = Validator.validate(dto);
 
         if (!response.valid()) {
-            throw new ValidationException(response.errors());
+            throw new NotValidException(response.errors());
         }
 
         // Create user
@@ -360,7 +360,7 @@ public class UserService {
         ValidationResponse response = Validator.validate(dto);
 
         if (!response.valid()) {
-            throw new ValidationException(response.errors());
+            throw new NotValidException(response.errors());
         }
 
         // Update user
@@ -391,7 +391,7 @@ Create a validation utility:
 package com.example.util;
 
 import io.github.emmajiugo.javalidator.Validator;
-import io.github.emmajiugo.javalidator.exception.ValidationException;
+import io.github.emmajiugo.javalidator.exception.NotValidException;
 import io.github.emmajiugo.javalidator.model.ValidationResponse;
 
 public class ValidationUtils {
@@ -403,7 +403,7 @@ public class ValidationUtils {
         ValidationResponse response = Validator.validate(dto);
 
         if (!response.valid()) {
-            throw new ValidationException(response.errors());
+            throw new NotValidException(response.errors());
         }
     }
 

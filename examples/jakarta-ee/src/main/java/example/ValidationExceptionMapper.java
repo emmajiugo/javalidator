@@ -3,17 +3,17 @@ package example;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.ext.ExceptionMapper;
 import jakarta.ws.rs.ext.Provider;
-import io.github.emmajiugo.javalidator.exception.ValidationException;
+import io.github.emmajiugo.javalidator.exception.NotValidException;
 import io.github.emmajiugo.javalidator.model.ValidationError;
 
 import java.util.HashMap;
 import java.util.Map;
 
 @Provider
-public class ValidationExceptionMapper implements ExceptionMapper<ValidationException> {
+public class ValidationExceptionMapper implements ExceptionMapper<NotValidException> {
 
     @Override
-    public Response toResponse(ValidationException exception) {
+    public Response toResponse(NotValidException exception) {
         Map<String, Object> errorResponse = new HashMap<>();
         errorResponse.put("status", "error");
         errorResponse.put("message", "Validation failed");
