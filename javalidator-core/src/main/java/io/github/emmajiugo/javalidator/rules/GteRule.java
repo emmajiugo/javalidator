@@ -11,14 +11,41 @@ public class GteRule implements ValidationRule {
 
     @Override
     public String validate(String fieldName, Object value, String parameter) {
+        // Allow null values - let the "required" rule handle null checks
+        if (value == null) {
+            return null;
+        }
+
         if (parameter == null || parameter.isEmpty()) {
             throw new IllegalArgumentException("Gte rule requires a parameter (e.g., 'gte:18')");
         }
 
         int min = Integer.parseInt(parameter);
-        if (value instanceof Number n && n.intValue() < min) {
-            return "The " + fieldName + " must be at least " + min + ".";
+
+        // Convert value to integer
+        int numericValue;
+        if (value instanceof Number n) {
+            numericValue = n.intValue();
+        } else if (value instanceof String s) {
+            try {
+                numericValue = Integer.parseInt(s);
+            } catch (NumberFormatException e) {
+                return String.format(
+                        "The %s value must be a valid number to use 'gte:%d' validation.",
+                        fieldName, min
+                );
+            }
+        } else {
+            throw new IllegalArgumentException(
+                    "Gte rule only supports Number and String types for numeric comparison."
+            );
         }
+
+        // Single validation check
+        if (numericValue < min) {
+            return String.format("The %s must be at least %d.", fieldName, min);
+        }
+
         return null;
     }
 }
