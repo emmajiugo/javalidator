@@ -66,23 +66,26 @@ class NumericRulesTest {
 
         record GtField(
                 @Rule("gt:17")
-                Integer value
+                Integer value,
+
+                @Rule("gt:10")
+                String anotherValue
         ) {}
 
         @Test
         @DisplayName("should pass with value greater than threshold")
         void shouldPassWithValueGreaterThanThreshold() {
-            assertValidation(new GtField(18))
+            assertValidation(new GtField(18, "20"))
                     .isValid();
-            assertValidation(new GtField(100))
+            assertValidation(new GtField(100, "15"))
                     .isValid();
         }
 
         @Test
         @DisplayName("should fail with value equal to threshold")
         void shouldFailWithValueEqualToThreshold() {
-            assertValidation(new GtField(17))
-                    .hasSingleError()
+            assertValidation(new GtField(17, "10"))
+                    .hasErrorCount(2)
                     .hasErrorOn("value")
                     .withMessageContaining("greater than 17");
         }
@@ -90,8 +93,8 @@ class NumericRulesTest {
         @Test
         @DisplayName("should fail with value less than threshold")
         void shouldFailWithValueLessThanThreshold() {
-            assertValidation(new GtField(16))
-                    .hasSingleError()
+            assertValidation(new GtField(16, "5"))
+                    .hasErrorCount(2)
                     .hasErrorOn("value")
                     .withMessageContaining("greater than 17");
         }
@@ -99,7 +102,7 @@ class NumericRulesTest {
         @Test
         @DisplayName("should pass with null value")
         void shouldPassWithNullValue() {
-            assertValidation(new GtField(null))
+            assertValidation(new GtField(null, null))
                     .isValid();
         }
     }
@@ -110,32 +113,35 @@ class NumericRulesTest {
 
         record LtField(
                 @Rule("lt:100")
-                Integer value
+                Integer value,
+
+                @Rule("lt:50")
+                String anotherValue
         ) {}
 
         @Test
         @DisplayName("should pass with value less than threshold")
         void shouldPassWithValueLessThanThreshold() {
-            assertValidation(new LtField(99))
+            assertValidation(new LtField(99, "30"))
                     .isValid();
-            assertValidation(new LtField(50))
+            assertValidation(new LtField(50, "10"))
                     .isValid();
         }
 
         @Test
         @DisplayName("should fail with value equal to threshold")
         void shouldFailWithValueEqualToThreshold() {
-            assertValidation(new LtField(100))
-                    .hasSingleError()
+            assertValidation(new LtField(100, "50"))
+                    .hasErrorCount(2)
                     .hasErrorOn("value")
-                    .withMessageContaining("less than 100");
+                    .withMessageContaining("less than");
         }
 
         @Test
         @DisplayName("should fail with value greater than threshold")
         void shouldFailWithValueGreaterThanThreshold() {
-            assertValidation(new LtField(101))
-                    .hasSingleError()
+            assertValidation(new LtField(101, "60"))
+                    .hasErrorCount(2)
                     .hasErrorOn("value")
                     .withMessageContaining("less than 100");
         }
@@ -143,7 +149,7 @@ class NumericRulesTest {
         @Test
         @DisplayName("should pass with null value")
         void shouldPassWithNullValue() {
-            assertValidation(new LtField(null))
+            assertValidation(new LtField(null, null))
                     .isValid();
         }
     }
@@ -154,30 +160,33 @@ class NumericRulesTest {
 
         record GteField(
                 @Rule("gte:18")
-                Integer value
+                Integer value,
+
+                @Rule("gte:10")
+                String anotherValue
         ) {}
 
         @Test
         @DisplayName("should pass with value equal to threshold")
         void shouldPassWithValueEqualToThreshold() {
-            assertValidation(new GteField(18))
+            assertValidation(new GteField(18, "10"))
                     .isValid();
         }
 
         @Test
         @DisplayName("should pass with value greater than threshold")
         void shouldPassWithValueGreaterThanThreshold() {
-            assertValidation(new GteField(19))
+            assertValidation(new GteField(19, "15"))
                     .isValid();
-            assertValidation(new GteField(100))
+            assertValidation(new GteField(100, "20"))
                     .isValid();
         }
 
         @Test
         @DisplayName("should fail with value less than threshold")
         void shouldFailWithValueLessThanThreshold() {
-            assertValidation(new GteField(17))
-                    .hasSingleError()
+            assertValidation(new GteField(17, "5"))
+                    .hasErrorCount(2)
                     .hasErrorOn("value")
                     .withMessageContaining("at least 18");
         }
@@ -185,7 +194,7 @@ class NumericRulesTest {
         @Test
         @DisplayName("should pass with null value")
         void shouldPassWithNullValue() {
-            assertValidation(new GteField(null))
+            assertValidation(new GteField(null, null))
                     .isValid();
         }
     }
@@ -196,30 +205,33 @@ class NumericRulesTest {
 
         record LteField(
                 @Rule("lte:100")
-                Integer value
+                Integer value,
+
+                @Rule("lte:50")
+                String anotherValue
         ) {}
 
         @Test
         @DisplayName("should pass with value equal to threshold")
         void shouldPassWithValueEqualToThreshold() {
-            assertValidation(new LteField(100))
+            assertValidation(new LteField(100, "50"))
                     .isValid();
         }
 
         @Test
         @DisplayName("should pass with value less than threshold")
         void shouldPassWithValueLessThanThreshold() {
-            assertValidation(new LteField(99))
+            assertValidation(new LteField(99, "30"))
                     .isValid();
-            assertValidation(new LteField(50))
+            assertValidation(new LteField(50, "10"))
                     .isValid();
         }
 
         @Test
         @DisplayName("should fail with value greater than threshold")
         void shouldFailWithValueGreaterThanThreshold() {
-            assertValidation(new LteField(101))
-                    .hasSingleError()
+            assertValidation(new LteField(101, "60"))
+                    .hasErrorCount(2)
                     .hasErrorOn("value")
                     .withMessageContaining("not exceed 100");
         }
@@ -227,7 +239,7 @@ class NumericRulesTest {
         @Test
         @DisplayName("should pass with null value")
         void shouldPassWithNullValue() {
-            assertValidation(new LteField(null))
+            assertValidation(new LteField(null, null))
                     .isValid();
         }
     }
