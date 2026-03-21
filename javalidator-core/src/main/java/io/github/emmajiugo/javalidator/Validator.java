@@ -202,7 +202,7 @@ public final class Validator {
                 } else {
                     // Graceful mode: convert to validation error to prevent crashes
                     errors.add("[CONFIG ERROR] " + e.getMessage());
-                    ruleNames.add("unknown");
+                    ruleNames.add(parsed.name());
                 }
             }
         }
