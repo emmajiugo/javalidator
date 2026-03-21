@@ -20,19 +20,19 @@ public class GtRule implements ValidationRule {
             throw new IllegalArgumentException("Gt rule requires a parameter (e.g., 'gt:0')");
         }
 
-        int min = Integer.parseInt(parameter);
+        double min = Double.parseDouble(parameter);
 
-        // Convert value to integer
-        int numericValue;
+        // Convert value to double
+        double numericValue;
         if (value instanceof Number n) {
-            numericValue = n.intValue();
+            numericValue = n.doubleValue();
         } else if (value instanceof String s) {
             try {
-                numericValue = Integer.parseInt(s);
+                numericValue = Double.parseDouble(s);
             } catch (NumberFormatException e) {
                 return String.format(
-                        "The %s value must be a valid number to use 'gt:%d' validation.",
-                        fieldName, min
+                        "The %s value must be a valid number to use 'gt:%s' validation.",
+                        fieldName, formatNumber(min)
                 );
             }
         } else {
@@ -43,9 +43,16 @@ public class GtRule implements ValidationRule {
 
         // Single validation check
         if (numericValue <= min) {
-            return String.format("The %s must be greater than %d.", fieldName, min);
+            return String.format("The %s must be greater than %s.", fieldName, formatNumber(min));
         }
 
         return null;
+    }
+
+    private String formatNumber(double value) {
+        if (value == Math.floor(value) && !Double.isInfinite(value)) {
+            return String.valueOf((long) value);
+        }
+        return String.valueOf(value);
     }
 }

@@ -20,19 +20,19 @@ public class GteRule implements ValidationRule {
             throw new IllegalArgumentException("Gte rule requires a parameter (e.g., 'gte:18')");
         }
 
-        int min = Integer.parseInt(parameter);
+        double min = Double.parseDouble(parameter);
 
-        // Convert value to integer
-        int numericValue;
+        // Convert value to double
+        double numericValue;
         if (value instanceof Number n) {
-            numericValue = n.intValue();
+            numericValue = n.doubleValue();
         } else if (value instanceof String s) {
             try {
-                numericValue = Integer.parseInt(s);
+                numericValue = Double.parseDouble(s);
             } catch (NumberFormatException e) {
                 return String.format(
-                        "The %s value must be a valid number to use 'gte:%d' validation.",
-                        fieldName, min
+                        "The %s value must be a valid number to use 'gte:%s' validation.",
+                        fieldName, formatNumber(min)
                 );
             }
         } else {
@@ -43,9 +43,16 @@ public class GteRule implements ValidationRule {
 
         // Single validation check
         if (numericValue < min) {
-            return String.format("The %s must be at least %d.", fieldName, min);
+            return String.format("The %s must be at least %s.", fieldName, formatNumber(min));
         }
 
         return null;
+    }
+
+    private String formatNumber(double value) {
+        if (value == Math.floor(value) && !Double.isInfinite(value)) {
+            return String.valueOf((long) value);
+        }
+        return String.valueOf(value);
     }
 }
