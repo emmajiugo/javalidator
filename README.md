@@ -20,7 +20,9 @@ A framework-agnostic Java validation library with Laravel-style syntax, inspired
 - ✅ **Extensible** - Easy to add custom validation rules
 - ✅ **Type-Safe** - Leverages Java's type system
 - ✅ **Custom Messages** - Per-rule custom error messages
-- ✅ **Consistent Errors** - Standardized error response format
+- ✅ **Consistent Errors** - Standardized error response format with `rules` field for programmatic error identification
+- ✅ **Bail Rule** - Stop validation on first failure with `bail`
+- ✅ **Collection/Array Size** - `min`/`max` now support Collections and Arrays
 
 ## Table of Contents
 
@@ -158,15 +160,13 @@ public record UserDTO(
   "errors": [
     {
       "field": "username",
-      "messages": [
-        "Username too short"
-      ]
+      "messages": ["Username too short"],
+      "rules": ["min"]
     },
     {
       "field": "email",
-      "messages": [
-        "Invalid email address"
-      ]
+      "messages": ["Invalid email address"],
+      "rules": ["email"]
     }
   ]
 }
@@ -179,7 +179,7 @@ public record UserDTO(
 Comprehensive documentation for all aspects of Javalidator:
 
 **Core Documentation:**
-- **[Supported Validation Rules](docs/supported-rules.md)** - Complete reference of all 32 built-in rules with examples
+- **[Supported Validation Rules](docs/supported-rules.md)** - Complete reference of all 36 built-in rules with examples
 - **[Custom Validation Rules](docs/custom-rules.md)** - Guide to creating your own validation rules
 - **[Security Guide](docs/security.md)** - Security features, configuration, and best practices
 
@@ -191,7 +191,7 @@ Comprehensive documentation for all aspects of Javalidator:
 
 ### Quick Reference
 
-**32 Built-in Rules Available** - See the [Supported Rules Guide](docs/supported-rules.md) for complete documentation.
+**36 Built-in Rules Available** - See the [Supported Rules Guide](docs/supported-rules.md) for complete documentation.
 
 **Combining Rules:**
 ```java
@@ -201,6 +201,8 @@ String email;
 @Rule("required|numeric|gte:0|lte:999")
 Integer quantity;
 ```
+
+**New in 1.0:** `not_in`, `starts_with`, `ends_with`, `bail` (stop on first failure), `ip:v4`/`ip:v6` variants
 
 See the **[Supported Rules Guide](docs/supported-rules.md)** for complete documentation.
 
