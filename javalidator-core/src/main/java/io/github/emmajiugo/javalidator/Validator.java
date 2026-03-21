@@ -15,6 +15,7 @@ import java.lang.reflect.RecordComponent;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Main validation entry point for validating objects using annotation-based rules.
@@ -240,6 +241,101 @@ public final class Validator {
         if (!response.valid()) {
             throw new NotValidException("Validation failed for " + fieldName, response.errors());
         }
+    }
+
+    /**
+     * Validates a Map's entries against the specified rules.
+     *
+     * <p>This method enables programmatic validation of Map data using the same
+     * pipe-separated rule syntax. Nested map values can be accessed using
+     * dot-notation paths (e.g., "address.city").
+     *
+     * <p>Example:
+     * <pre>{@code
+     * ValidationResponse response = Validator.validateMap(body, Map.of(
+     *     "title", "required|min:3",
+     *     "address.city", "required",
+     *     "address.zip", "required|digits:5"
+     * ));
+     * }</pre>
+     *
+     * <p><strong>Note:</strong> Conditional rules (like {@code required_if}, {@code same},
+     * {@code different}) and the {@code enum} rule cannot be used with this method —
+     * same restrictions as {@link #validateValue(Object, String, String)}.
+     *
+     * @param data  the map to validate (supports nested maps via dot-notation keys)
+     * @param rules map of field paths to pipe-separated rule strings
+     * @return a ValidationResponse containing validation results
+     * @throws IllegalArgumentException if a conditional rule or enum rule is used
+     */
+    public static ValidationResponse validateMap(Map<String, ?> data, Map<String, String> rules) {
+        ensureInitialized();
+
+        if (data == null) {
+            return ValidationResponse.failure(List.of(
+                    new ValidationError("data", List.of("Validation data cannot be null"), List.of("required"))
+            ));
+        }
+
+        if (rules == null || rules.isEmpty()) {
+            return ValidationResponse.success();
+        }
+
+        List<ValidationError> errors = new ArrayList<>();
+
+        for (Map.Entry<String, String> entry : rules.entrySet()) {
+            String fieldPath = entry.getKey();
+            if (fieldPath == null || fieldPath.isBlank()) {
+                continue;
+            }
+            String ruleString = entry.getValue();
+
+            Object value = resolveMapValue(data, fieldPath);
+
+            ValidationResponse response = validateValue(value, ruleString, fieldPath);
+            if (!response.valid()) {
+                errors.addAll(response.errors());
+            }
+        }
+
+        return errors.isEmpty()
+                ? ValidationResponse.success()
+                : ValidationResponse.failure(errors);
+    }
+
+    /**
+     * Validates a Map and throws an exception if validation fails.
+     *
+     * @param data  the map to validate
+     * @param rules map of field paths to pipe-separated rule strings
+     * @throws NotValidException if validation fails
+     * @see #validateMap(Map, Map)
+     */
+    public static void validateMapOrThrow(Map<String, ?> data, Map<String, String> rules) {
+        ValidationResponse response = validateMap(data, rules);
+        if (!response.valid()) {
+            throw new NotValidException("Map validation failed", response.errors());
+        }
+    }
+
+    /**
+     * Resolves a value from a possibly-nested map using dot-notation path.
+     *
+     * @param data the map to resolve from
+     * @param path dot-separated path (e.g., "address.city")
+     * @return the resolved value, or null if any segment is missing or not a Map
+     */
+    private static Object resolveMapValue(Map<String, ?> data, String path) {
+        String[] segments = path.split("\\.");
+        Object current = data;
+        for (String segment : segments) {
+            if (current instanceof Map<?, ?> map) {
+                current = map.get(segment);
+            } else {
+                return null;
+            }
+        }
+        return current;
     }
 
     private static List<ValidationError> validateRecord(Object dto, Class<?> clazz) {
