@@ -195,7 +195,10 @@ public class ValidationAspect {
                     if (!response.valid()) {
                         // Apply custom message if provided
                         if (!rule.message().isEmpty()) {
-                            allErrors.add(new ValidationError(paramName, List.of(rule.message()), List.of()));
+                            List<String> ruleNames = response.errors().stream()
+                                    .flatMap(e -> e.rules().stream())
+                                    .toList();
+                            allErrors.add(new ValidationError(paramName, List.of(rule.message()), ruleNames));
                         } else {
                             allErrors.addAll(response.errors());
                         }
