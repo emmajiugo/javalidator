@@ -272,4 +272,61 @@ class MapValidationTest {
             assertThat(response.errors().get(0).rules()).contains("email");
         }
     }
+
+    @Nested
+    @DisplayName("Response Conversion")
+    class ResponseConversionTests {
+
+        @Test
+        @DisplayName("toMap should return field to message list map")
+        void toMapShouldReturnMessageLists() {
+            Map<String, Object> data = Map.of("name", "A");
+            Map<String, String> rules = Map.of(
+                    "name", "required|min:3",
+                    "email", "required"
+            );
+
+            ValidationResponse response = Validator.validateMap(data, rules);
+            Map<String, java.util.List<String>> map = response.toMap();
+
+            assertThat(map).containsKey("name");
+            assertThat(map).containsKey("email");
+            assertThat(map.get("name")).anyMatch(m -> m.contains("at least 3"));
+            assertThat(map.get("email")).anyMatch(m -> m.contains("required"));
+        }
+
+        @Test
+        @DisplayName("toFlatMap should return first message per field")
+        void toFlatMapShouldReturnFirstMessage() {
+            Map<String, Object> data = Map.of("name", "A");
+            Map<String, String> rules = Map.of(
+                    "name", "required|min:3|max:1",
+                    "email", "required"
+            );
+
+            ValidationResponse response = Validator.validateMap(data, rules);
+            Map<String, String> flat = response.toFlatMap();
+
+            assertThat(flat).containsKey("name");
+            assertThat(flat).containsKey("email");
+            // Only one message per field
+            assertThat(flat.get("name")).isInstanceOf(String.class);
+        }
+
+        @Test
+        @DisplayName("toMap should return empty map when valid")
+        void toMapShouldReturnEmptyWhenValid() {
+            ValidationResponse response = Validator.validateMap(
+                    Map.of("name", "John"), Map.of("name", "required"));
+            assertThat(response.toMap()).isEmpty();
+        }
+
+        @Test
+        @DisplayName("toFlatMap should return empty map when valid")
+        void toFlatMapShouldReturnEmptyWhenValid() {
+            ValidationResponse response = Validator.validateMap(
+                    Map.of("name", "John"), Map.of("name", "required"));
+            assertThat(response.toFlatMap()).isEmpty();
+        }
+    }
 }

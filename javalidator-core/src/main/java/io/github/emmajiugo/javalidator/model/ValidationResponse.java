@@ -1,6 +1,8 @@
 package io.github.emmajiugo.javalidator.model;
 
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Represents the result of a validation operation.
@@ -30,5 +32,43 @@ public record ValidationResponse(boolean valid, List<ValidationError> errors) {
      */
     public static ValidationResponse failure(List<ValidationError> errors) {
         return new ValidationResponse(false, errors);
+    }
+
+    /**
+     * Converts validation errors to a map of field names to message lists.
+     *
+     * <p>If multiple {@link ValidationError} objects share the same field name,
+     * their messages are merged into a single list.
+     *
+     * @return a map where keys are field names and values are lists of error messages
+     */
+    public Map<String, List<String>> toMap() {
+        Map<String, List<String>> map = new LinkedHashMap<>();
+        for (ValidationError error : errors) {
+            map.merge(error.field(), error.messages(), (existing, incoming) -> {
+                List<String> merged = new java.util.ArrayList<>(existing);
+                merged.addAll(incoming);
+                return merged;
+            });
+        }
+        return map;
+    }
+
+    /**
+     * Converts validation errors to a flat map of field names to first error message.
+     *
+     * <p>Only the first error message per field is included. Useful for simple
+     * error display scenarios where one message per field is sufficient.
+     *
+     * @return a map where keys are field names and values are the first error message
+     */
+    public Map<String, String> toFlatMap() {
+        Map<String, String> map = new LinkedHashMap<>();
+        for (ValidationError error : errors) {
+            if (!map.containsKey(error.field()) && !error.messages().isEmpty()) {
+                map.put(error.field(), error.messages().get(0));
+            }
+        }
+        return map;
     }
 }
