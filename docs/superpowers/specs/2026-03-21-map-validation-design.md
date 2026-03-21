@@ -130,6 +130,9 @@ public static ValidationResponse validateMap(Map<String, ?> data, Map<String, St
 
     for (Map.Entry<String, String> entry : rules.entrySet()) {
         String fieldPath = entry.getKey();
+        if (fieldPath == null || fieldPath.isBlank()) {
+            continue; // Skip null/blank rule keys
+        }
         String ruleString = entry.getValue();
 
         Object value = resolveMapValue(data, fieldPath);
@@ -169,6 +172,7 @@ public static void validateMapOrThrow(Map<String, ?> data, Map<String, String> r
 ## What This Does NOT Support
 
 - **Spring AOP integration** — Map validation is programmatic only. No annotation-based auto-validation for Map parameters.
+- **Dot-literal keys** — if a top-level map key literally contains a dot (e.g., `"user.name"` as a single key), the resolver will treat it as a nested path. This is the same trade-off Laravel makes with dot notation.
 - **Wildcard paths** like `"items.*.name"` — could be added in a future release.
 - **Array index notation** like `"items[0].name"` — could be added in a future release.
 - **Conditional rules** (`required_if`, `required_unless`, `same`, `different`) — these require DTO context. Same limitation as `validateValue()`.
