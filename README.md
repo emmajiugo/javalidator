@@ -23,6 +23,7 @@ A framework-agnostic Java validation library with Laravel-style syntax, inspired
 - ✅ **Consistent Errors** - Standardized error response format with `rules` field for programmatic error identification
 - ✅ **Bail Rule** - Stop validation on first failure with `bail`
 - ✅ **Collection/Array Size** - `min`/`max` now support Collections and Arrays
+- ✅ **Map Validation** - Validate `Map<String, ?>` entries with dot-notation nested key support
 
 ## Table of Contents
 

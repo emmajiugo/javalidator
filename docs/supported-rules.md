@@ -259,6 +259,25 @@ public record OrderDTO(
 ) {}
 ```
 
+### Map Validation
+
+Validate `Map<String, ?>` entries programmatically with dot-notation for nested keys:
+
+```java
+Map<String, Object> data = Map.of(
+    "title", "My Event",
+    "address", Map.of("city", "Lagos", "zip", "100001")
+);
+
+Validator.validateMapOrThrow(data, Map.of(
+    "title", "required|min:3",
+    "address.city", "required",
+    "address.zip", "required|digits:6"
+));
+```
+
+All built-in rules work with map validation. Conditional rules (`required_if`, `same`, etc.) are not supported — use object validation for those.
+
 ## Null Value Handling
 
 - **required**: Fails if value is `null` or blank
