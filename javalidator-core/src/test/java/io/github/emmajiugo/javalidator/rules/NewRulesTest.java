@@ -37,7 +37,8 @@ class NewRulesTest {
             assertValidation(new RoleField("admin"))
                     .hasSingleError()
                     .hasErrorOn("role")
-                    .withMessageContaining("must not be one of");
+                    .withMessageContaining("must not be one of")
+                    .hasRule("not_in");
         }
 
         @Test
@@ -86,7 +87,8 @@ class NewRulesTest {
             assertValidation(new UrlField("ftp://example.com"))
                     .hasSingleError()
                     .hasErrorOn("url")
-                    .withMessageContaining("must start with one of");
+                    .withMessageContaining("must start with one of")
+                    .hasRule("starts_with");
         }
 
         @Test
@@ -165,7 +167,8 @@ class NewRulesTest {
             assertValidation(new DomainField("example.io"))
                     .hasSingleError()
                     .hasErrorOn("domain")
-                    .withMessageContaining("must end with one of");
+                    .withMessageContaining("must end with one of")
+                    .hasRule("ends_with");
         }
 
         @Test

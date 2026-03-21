@@ -87,7 +87,8 @@ class NumericRulesTest {
             assertValidation(new GtField(17, "10"))
                     .hasErrorCount(2)
                     .hasErrorOn("value")
-                    .withMessageContaining("greater than 17");
+                    .withMessageContaining("greater than 17")
+                    .hasRule("gt");
         }
 
         @Test

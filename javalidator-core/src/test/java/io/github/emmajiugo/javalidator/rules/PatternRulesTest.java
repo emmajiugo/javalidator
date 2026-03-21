@@ -334,7 +334,9 @@ class PatternRulesTest {
         @DisplayName("ip:v4 rejects IPv6 address")
         void ipV4RejectsIpv6() {
             assertValidation(new Ipv4OnlyField("::1"))
-                    .hasSingleError();
+                    .hasSingleError()
+                    .hasErrorOn("address")
+                    .hasRule("ip");
         }
 
         @Test

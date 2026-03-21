@@ -1,5 +1,6 @@
 package io.github.emmajiugo.javalidator.rules;
 
+import io.github.emmajiugo.javalidator.Validator;
 import io.github.emmajiugo.javalidator.annotations.Rule;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -8,6 +9,7 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 
 import static io.github.emmajiugo.javalidator.rules.ValidationTestHelper.assertValidation;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Tests for basic validation rules: required, min, max, email, size, in
@@ -37,7 +39,8 @@ class BasicValidationRulesTest {
             assertValidation(new RequiredField(null))
                     .hasSingleError()
                     .hasErrorOn("username")
-                    .withMessageContaining("required");
+                    .withMessageContaining("required")
+                    .hasRule("required");
         }
 
         @Test
@@ -79,7 +82,8 @@ class BasicValidationRulesTest {
             assertValidation(new MinLengthField("ab"))
                     .hasSingleError()
                     .hasErrorOn("username")
-                    .withMessageContaining("at least 3");
+                    .withMessageContaining("at least 3")
+                    .hasRule("min");
         }
 
         @Test
@@ -154,7 +158,8 @@ class BasicValidationRulesTest {
             assertValidation(new EmailField("invalid"))
                     .hasSingleError()
                     .hasErrorOn("email")
-                    .withMessageContaining("email");
+                    .withMessageContaining("email")
+                    .hasRule("email");
 
             assertValidation(new EmailField("@example.com"))
                     .hasSingleError();
@@ -464,6 +469,28 @@ class BasicValidationRulesTest {
             assertValidation(new UserWithCustomMessages("john", "invalid"))
                     .hasErrorOn("email")
                     .withMessage("Please provide a valid email address");
+        }
+    }
+
+    @Nested
+    @DisplayName("Rules Field Enrichment")
+    class RulesFieldTests {
+
+        record MultiRuleField(
+                @Rule(value = "required|min:3", message = "Field is invalid")
+                String name
+        ) {}
+
+        @Test
+        @DisplayName("should populate rules even with custom message")
+        void shouldPopulateRulesWithCustomMessage() {
+            var response = Validator.validate(new MultiRuleField(""));
+            assertThat(response.valid()).isFalse();
+            var error = response.errors().get(0);
+            // Custom message used once
+            assertThat(error.messages()).containsExactly("Field is invalid");
+            // But rules captures all failed rule names
+            assertThat(error.rules()).contains("required", "min");
         }
     }
 }
