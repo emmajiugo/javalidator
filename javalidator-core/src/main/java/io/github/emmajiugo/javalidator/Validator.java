@@ -162,6 +162,7 @@ public final class Validator {
         List<String> errors = new ArrayList<>();
         List<String> ruleNames = new ArrayList<>();
         String[] ruleDefinitions = rules.split("\\|");
+        boolean bailOnFailure = false;
 
         for (String ruleDefinition : ruleDefinitions) {
             String trimmed = ruleDefinition.trim();
@@ -171,6 +172,11 @@ public final class Validator {
 
             RuleDefinition parsed = RuleDefinition.parse(trimmed);
             ValidationRule rule = RuleRegistry.getRequiredRule(parsed.name());
+
+            if (rule instanceof FlowControlRule) {
+                bailOnFailure = true;
+                continue;
+            }
 
             // Conditional rules require DTO context - not supported for single value validation
             // These are unsupported operations, not configuration errors - always throw
@@ -193,6 +199,7 @@ public final class Validator {
                 if (error != null) {
                     errors.add(error);
                     ruleNames.add(parsed.name());
+                    if (bailOnFailure) break;
                 }
             } catch (IllegalArgumentException e) {
                 // Configuration error detected (e.g., missing parameter, invalid rule)
@@ -203,6 +210,7 @@ public final class Validator {
                     // Graceful mode: convert to validation error to prevent crashes
                     errors.add("[CONFIG ERROR] " + e.getMessage());
                     ruleNames.add(parsed.name());
+                    if (bailOnFailure) break;
                 }
             }
         }
@@ -316,11 +324,26 @@ public final class Validator {
 
         List<RuleResult> results = new ArrayList<>();
         String[] ruleDefinitions = ruleAnnotation.value().split("\\|");
+        boolean bailOnFailure = false;
 
         for (String ruleDefinition : ruleDefinitions) {
-            RuleResult result = applyRule(fieldName, value, ruleDefinition.trim(), ruleAnnotation, dto);
+            String trimmed = ruleDefinition.trim();
+
+            try {
+                RuleDefinition parsed = RuleDefinition.parse(trimmed);
+                ValidationRule rule = RuleRegistry.getRequiredRule(parsed.name());
+                if (rule instanceof FlowControlRule) {
+                    bailOnFailure = true;
+                    continue;
+                }
+            } catch (IllegalArgumentException e) {
+                // Fall through to applyRule which handles graceful/strict mode
+            }
+
+            RuleResult result = applyRule(fieldName, value, trimmed, ruleAnnotation, dto);
             if (result != null) {
                 results.add(result);
+                if (bailOnFailure) break;
             }
         }
 

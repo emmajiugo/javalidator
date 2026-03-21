@@ -64,6 +64,7 @@ final class BuiltInRules {
 
                 // Control flow rules
                 new NullableRule(),
+                new BailRule(),
 
                 // String format rules
                 new DigitsRule(),

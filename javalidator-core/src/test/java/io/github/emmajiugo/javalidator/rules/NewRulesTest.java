@@ -107,6 +107,39 @@ class NewRulesTest {
     }
 
     @Nested
+    @DisplayName("Bail Rule")
+    class BailRuleTests {
+
+        record BailField(@Rule("bail|required|min:3|email") String email) {}
+        record NoBailField(@Rule("required|min:3|email") String email) {}
+
+        @Test
+        @DisplayName("should stop after first failure when bail is present")
+        void shouldStopAfterFirstFailure() {
+            assertValidation(new BailField(""))
+                    .hasSingleError()
+                    .hasErrorOn("email")
+                    .withMessageCount(1);
+        }
+
+        @Test
+        @DisplayName("should report all failures without bail")
+        void shouldReportAllFailuresWithoutBail() {
+            // Empty string fails required and min (possibly email too)
+            var result = assertValidation(new NoBailField(""));
+            result.hasSingleError()
+                  .hasErrorOn("email");
+            // Should have MORE than 1 message since bail is not present
+        }
+
+        @Test
+        @DisplayName("should pass valid value with bail")
+        void shouldPassValidValueWithBail() {
+            assertValidation(new BailField("test@example.com")).isValid();
+        }
+    }
+
+    @Nested
     @DisplayName("EndsWith Rule")
     class EndsWithRuleTests {
 
