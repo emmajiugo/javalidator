@@ -44,7 +44,7 @@ For Springboot 3.5.x and above, use the official starter for auto-configuration:
 <dependency>
     <groupId>io.github.emmajiugo</groupId>
     <artifactId>javalidator-spring</artifactId>
-    <version>0.6.2</version>
+    <version>1.0.0</version>
 </dependency>
 
 <!-- Required for AOP-based validation -->
@@ -56,7 +56,7 @@ For Springboot 3.5.x and above, use the official starter for auto-configuration:
 
 **Gradle:**
 ```groovy
-implementation 'io.github.emmajiugo:javalidator-spring:0.6.2'
+implementation 'io.github.emmajiugo:javalidator-spring:1.0.0'
 implementation 'org.springframework.boot:spring-boot-starter-aop'
 ```
 
@@ -71,13 +71,13 @@ For plain Java, Quarkus, Jakarta EE, or manual configuration:
 <dependency>
     <groupId>io.github.emmajiugo</groupId>
     <artifactId>javalidator-core</artifactId>
-    <version>0.6.2</version>
+    <version>1.0.0</version>
 </dependency>
 ```
 
 **Gradle:**
 ```groovy
-implementation 'io.github.emmajiugo:javalidator-core:0.6.2'
+implementation 'io.github.emmajiugo:javalidator-core:1.0.0'
 ```
 
 ## Quick Start
