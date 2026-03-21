@@ -5,6 +5,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
+
 import static io.github.emmajiugo.javalidator.rules.ValidationTestHelper.assertValidation;
 
 /**
@@ -243,6 +245,146 @@ class BasicValidationRulesTest {
         @DisplayName("should pass with null value (let required handle nulls)")
         void shouldPassWithNullValue() {
             assertValidation(new InField(null))
+                    .isValid();
+        }
+    }
+
+    @Nested
+    @DisplayName("Min Rule — Collections")
+    class MinRuleCollectionTests {
+
+        record MinListField(
+                @Rule("min:2")
+                List<String> tags
+        ) {}
+
+        record MinArrayField(
+                @Rule("min:2")
+                String[] items
+        ) {}
+
+        record MinNumberField(
+                @Rule("min:5")
+                Integer count
+        ) {}
+
+        @Test
+        @DisplayName("should pass when list size meets minimum")
+        void shouldPassWhenListSizeMeetsMinimum() {
+            assertValidation(new MinListField(List.of("a", "b")))
+                    .isValid();
+            assertValidation(new MinListField(List.of("a", "b", "c")))
+                    .isValid();
+        }
+
+        @Test
+        @DisplayName("should fail when list size is below minimum")
+        void shouldFailWhenListSizeBelowMinimum() {
+            assertValidation(new MinListField(List.of("a")))
+                    .hasSingleError()
+                    .hasErrorOn("tags")
+                    .withMessageContaining("at least 2 items");
+        }
+
+        @Test
+        @DisplayName("should pass when array length meets minimum")
+        void shouldPassWhenArrayLengthMeetsMinimum() {
+            assertValidation(new MinArrayField(new String[]{"x", "y"}))
+                    .isValid();
+        }
+
+        @Test
+        @DisplayName("should fail when array length is below minimum")
+        void shouldFailWhenArrayLengthBelowMinimum() {
+            assertValidation(new MinArrayField(new String[]{"x"}))
+                    .hasSingleError()
+                    .hasErrorOn("items")
+                    .withMessageContaining("at least 2 items");
+        }
+
+        @Test
+        @DisplayName("should return helpful message for Number type")
+        void shouldReturnHelpfulMessageForNumber() {
+            assertValidation(new MinNumberField(3))
+                    .hasSingleError()
+                    .hasErrorOn("count")
+                    .withMessageContaining("gte");
+        }
+
+        @Test
+        @DisplayName("should pass with null value")
+        void shouldPassWithNullValue() {
+            assertValidation(new MinListField(null))
+                    .isValid();
+        }
+    }
+
+    @Nested
+    @DisplayName("Max Rule — Collections")
+    class MaxRuleCollectionTests {
+
+        record MaxListField(
+                @Rule("max:3")
+                List<String> tags
+        ) {}
+
+        record MaxArrayField(
+                @Rule("max:3")
+                String[] items
+        ) {}
+
+        record MaxNumberField(
+                @Rule("max:10")
+                Integer count
+        ) {}
+
+        @Test
+        @DisplayName("should pass when list size is within maximum")
+        void shouldPassWhenListSizeWithinMaximum() {
+            assertValidation(new MaxListField(List.of("a", "b", "c")))
+                    .isValid();
+            assertValidation(new MaxListField(List.of("a")))
+                    .isValid();
+        }
+
+        @Test
+        @DisplayName("should fail when list size exceeds maximum")
+        void shouldFailWhenListSizeExceedsMaximum() {
+            assertValidation(new MaxListField(List.of("a", "b", "c", "d")))
+                    .hasSingleError()
+                    .hasErrorOn("tags")
+                    .withMessageContaining("more than 3 items");
+        }
+
+        @Test
+        @DisplayName("should pass when array length is within maximum")
+        void shouldPassWhenArrayLengthWithinMaximum() {
+            assertValidation(new MaxArrayField(new String[]{"x", "y"}))
+                    .isValid();
+        }
+
+        @Test
+        @DisplayName("should fail when array length exceeds maximum")
+        void shouldFailWhenArrayLengthExceedsMaximum() {
+            assertValidation(new MaxArrayField(new String[]{"x", "y", "z", "w"}))
+                    .hasSingleError()
+                    .hasErrorOn("items")
+                    .withMessageContaining("more than 3 items");
+        }
+
+        @Test
+        @DisplayName("should return helpful message for Number type")
+        void shouldReturnHelpfulMessageForNumber() {
+            assertValidation(new MaxNumberField(15))
+                    .hasSingleError()
+                    .hasErrorOn("count")
+                    .withMessageContaining("lte");
+        }
+
+        @Test
+        @DisplayName("should pass with null value")
+        void shouldPassWithNullValue() {
+            assertValidation(new MaxListField(null))
                     .isValid();
         }
     }
