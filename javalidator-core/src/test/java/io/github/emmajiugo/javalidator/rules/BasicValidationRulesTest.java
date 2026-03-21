@@ -169,6 +169,24 @@ class BasicValidationRulesTest {
             assertValidation(new EmailField(null))
                     .isValid();
         }
+
+        @Test
+        @DisplayName("should reject leading dot in local part")
+        void shouldRejectLeadingDot() {
+            assertValidation(new EmailField(".user@example.com")).hasSingleError();
+        }
+
+        @Test
+        @DisplayName("should reject trailing dot in local part")
+        void shouldRejectTrailingDot() {
+            assertValidation(new EmailField("user.@example.com")).hasSingleError();
+        }
+
+        @Test
+        @DisplayName("should reject consecutive dots in local part")
+        void shouldRejectConsecutiveDots() {
+            assertValidation(new EmailField("user..name@example.com")).hasSingleError();
+        }
     }
 
     @Nested
