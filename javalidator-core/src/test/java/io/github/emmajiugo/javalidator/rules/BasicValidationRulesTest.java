@@ -214,6 +214,11 @@ class BasicValidationRulesTest {
                 String status
         ) {}
 
+        record InField(
+                @Rule("in:active,inactive,pending")
+                String status
+        ) {}
+
         @Test
         @DisplayName("should pass with valid values")
         void shouldPassWithValidValues() {
@@ -235,12 +240,10 @@ class BasicValidationRulesTest {
         }
 
         @Test
-        @DisplayName("should fail with null value")
-        void shouldFailWithNullValue() {
-            // The 'in' rule currently validates null as invalid
-            assertValidation(new StatusField(null))
-                    .hasSingleError()
-                    .hasErrorOn("status");
+        @DisplayName("should pass with null value (let required handle nulls)")
+        void shouldPassWithNullValue() {
+            assertValidation(new InField(null))
+                    .isValid();
         }
     }
 

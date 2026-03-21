@@ -11,6 +11,10 @@ public class InRule implements ValidationRule {
 
     @Override
     public String validate(String fieldName, Object value, String parameter) {
+        if (value == null) {
+            return null;
+        }
+
         if (parameter == null || parameter.isEmpty()) {
             throw new IllegalArgumentException("In rule requires a parameter (e.g., 'in:value1,value2')");
         }
