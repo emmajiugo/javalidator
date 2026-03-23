@@ -51,13 +51,13 @@
       "name": "javalidator.aspect.validate-get-requests",
       "type": "java.lang.Boolean",
       "description": "Whether to validate GET request parameters.",
-      "defaultValue": false
+      "defaultValue": true
     },
     {
       "name": "javalidator.aspect.validate-delete-requests",
       "type": "java.lang.Boolean",
       "description": "Whether to validate DELETE request parameters.",
-      "defaultValue": false
+      "defaultValue": true
     },
     {
       "name": "javalidator.exception-handler.enabled",
@@ -82,6 +82,18 @@
       "type": "java.lang.String",
       "description": "Custom error message for validation failures.",
       "defaultValue": "Validation failed"
+    },
+    {
+      "name": "javalidator.strict-mode",
+      "type": "java.lang.Boolean",
+      "description": "Whether to enable strict mode for configuration error handling.",
+      "defaultValue": false
+    },
+    {
+      "name": "javalidator.aspect.validate-services",
+      "type": "java.lang.Boolean",
+      "description": "Whether to validate method parameters in @Validated service classes.",
+      "defaultValue": true
     }
   ],
   "hints": []

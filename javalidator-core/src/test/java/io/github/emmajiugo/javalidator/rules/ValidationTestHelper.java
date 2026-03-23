@@ -154,5 +154,16 @@ public class ValidationTestHelper {
                     .isEqualTo(expectedMessage);
             return this;
         }
+
+        /**
+         * Asserts that the error's rules list contains the specified rule name.
+         */
+        public FieldErrorAssert hasRule(String ruleName) {
+            isNotNull();
+            assertThat(actual.rules())
+                    .withFailMessage("Expected rules to contain '%s', but rules were: %s", ruleName, actual.rules())
+                    .contains(ruleName);
+            return this;
+        }
     }
 }

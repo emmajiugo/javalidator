@@ -11,7 +11,9 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -37,7 +39,28 @@ public class GlobalExceptionHandler {
     ) {
         Map<String, Object> errors = new LinkedHashMap<>();
         for (ValidationError validationError : ex.getErrors()) {
-            errors.put(validationError.field(), validationError.messages());
+            String field = validationError.field();
+            if (errors.containsKey(field)) {
+                @SuppressWarnings("unchecked")
+                Map<String, Object> existing = (Map<String, Object>) errors.get(field);
+                @SuppressWarnings("unchecked")
+                List<String> existingMessages = (List<String>) existing.get("messages");
+                @SuppressWarnings("unchecked")
+                List<String> existingRules = (List<String>) existing.get("rules");
+
+                List<String> mergedMessages = new ArrayList<>(existingMessages);
+                mergedMessages.addAll(validationError.messages());
+                List<String> mergedRules = new ArrayList<>(existingRules);
+                mergedRules.addAll(validationError.rules());
+
+                existing.put("messages", mergedMessages);
+                existing.put("rules", mergedRules);
+            } else {
+                Map<String, Object> fieldError = new LinkedHashMap<>();
+                fieldError.put("messages", validationError.messages());
+                fieldError.put("rules", validationError.rules());
+                errors.put(field, fieldError);
+            }
         }
 
         JavalidatorProperties.ExceptionHandler handlerProps = properties.getExceptionHandler();

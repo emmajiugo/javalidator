@@ -87,7 +87,8 @@ class NumericRulesTest {
             assertValidation(new GtField(17, "10"))
                     .hasErrorCount(2)
                     .hasErrorOn("value")
-                    .withMessageContaining("greater than 17");
+                    .withMessageContaining("greater than 17")
+                    .hasRule("gt");
         }
 
         @Test
@@ -104,6 +105,22 @@ class NumericRulesTest {
         void shouldPassWithNullValue() {
             assertValidation(new GtField(null, null))
                     .isValid();
+        }
+
+        @Test
+        @DisplayName("should handle decimal thresholds")
+        void shouldHandleDecimalThresholds() {
+            record DecimalGt(@Rule("gt:3.5") Double value) {}
+            assertValidation(new DecimalGt(4.0)).isValid();
+            assertValidation(new DecimalGt(3.5)).hasSingleError();
+            assertValidation(new DecimalGt(3.0)).hasSingleError();
+        }
+
+        @Test
+        @DisplayName("should handle Long values without overflow")
+        void shouldHandleLongValues() {
+            record LongGt(@Rule("gt:0") Long value) {}
+            assertValidation(new LongGt(3_000_000_000L)).isValid();
         }
     }
 
@@ -152,6 +169,22 @@ class NumericRulesTest {
             assertValidation(new LtField(null, null))
                     .isValid();
         }
+
+        @Test
+        @DisplayName("should handle decimal thresholds")
+        void shouldHandleDecimalThresholds() {
+            record DecimalLt(@Rule("lt:3.5") Double value) {}
+            assertValidation(new DecimalLt(3.0)).isValid();
+            assertValidation(new DecimalLt(3.5)).hasSingleError();
+            assertValidation(new DecimalLt(4.0)).hasSingleError();
+        }
+
+        @Test
+        @DisplayName("should handle Long values without overflow")
+        void shouldHandleLongValues() {
+            record LongLt(@Rule("lt:4000000000") Long value) {}
+            assertValidation(new LongLt(3_000_000_000L)).isValid();
+        }
     }
 
     @Nested
@@ -197,6 +230,22 @@ class NumericRulesTest {
             assertValidation(new GteField(null, null))
                     .isValid();
         }
+
+        @Test
+        @DisplayName("should handle decimal thresholds")
+        void shouldHandleDecimalThresholds() {
+            record DecimalGte(@Rule("gte:3.5") Double value) {}
+            assertValidation(new DecimalGte(3.5)).isValid();
+            assertValidation(new DecimalGte(4.0)).isValid();
+            assertValidation(new DecimalGte(3.0)).hasSingleError();
+        }
+
+        @Test
+        @DisplayName("should handle Long values without overflow")
+        void shouldHandleLongValues() {
+            record LongGte(@Rule("gte:0") Long value) {}
+            assertValidation(new LongGte(3_000_000_000L)).isValid();
+        }
     }
 
     @Nested
@@ -241,6 +290,22 @@ class NumericRulesTest {
         void shouldPassWithNullValue() {
             assertValidation(new LteField(null, null))
                     .isValid();
+        }
+
+        @Test
+        @DisplayName("should handle decimal thresholds")
+        void shouldHandleDecimalThresholds() {
+            record DecimalLte(@Rule("lte:3.5") Double value) {}
+            assertValidation(new DecimalLte(3.5)).isValid();
+            assertValidation(new DecimalLte(3.0)).isValid();
+            assertValidation(new DecimalLte(4.0)).hasSingleError();
+        }
+
+        @Test
+        @DisplayName("should handle Long values without overflow")
+        void shouldHandleLongValues() {
+            record LongLte(@Rule("lte:4000000000") Long value) {}
+            assertValidation(new LongLte(3_000_000_000L)).isValid();
         }
     }
 

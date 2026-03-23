@@ -302,6 +302,66 @@ class PatternRulesTest {
     }
 
     @Nested
+    @DisplayName("IP Rule - IPv6 and Parameters")
+    class IpRuleExtendedTests {
+
+        record IpAnyField(@Rule("ip") String address) {}
+        record Ipv4OnlyField(@Rule("ip:v4") String address) {}
+        record Ipv6OnlyField(@Rule("ip:v6") String address) {}
+
+        @Test
+        @DisplayName("ip accepts IPv4 address")
+        void ipAcceptsIpv4() {
+            assertValidation(new IpAnyField("192.168.1.1"))
+                    .isValid();
+        }
+
+        @Test
+        @DisplayName("ip accepts full IPv6 address")
+        void ipAcceptsIpv6Full() {
+            assertValidation(new IpAnyField("2001:0db8:85a3:0000:0000:8a2e:0370:7334"))
+                    .isValid();
+        }
+
+        @Test
+        @DisplayName("ip accepts loopback IPv6 (::1)")
+        void ipAcceptsIpv6Loopback() {
+            assertValidation(new IpAnyField("::1"))
+                    .isValid();
+        }
+
+        @Test
+        @DisplayName("ip:v4 rejects IPv6 address")
+        void ipV4RejectsIpv6() {
+            assertValidation(new Ipv4OnlyField("::1"))
+                    .hasSingleError()
+                    .hasErrorOn("address")
+                    .hasRule("ip");
+        }
+
+        @Test
+        @DisplayName("ip:v6 rejects IPv4 address")
+        void ipV6RejectsIpv4() {
+            assertValidation(new Ipv6OnlyField("192.168.1.1"))
+                    .hasSingleError();
+        }
+
+        @Test
+        @DisplayName("ip:v6 accepts IPv6 address")
+        void ipV6AcceptsIpv6() {
+            assertValidation(new Ipv6OnlyField("2001:0db8:85a3:0000:0000:8a2e:0370:7334"))
+                    .isValid();
+        }
+
+        @Test
+        @DisplayName("ip passes with null value")
+        void ipPassesWithNull() {
+            assertValidation(new IpAnyField(null))
+                    .isValid();
+        }
+    }
+
+    @Nested
     @DisplayName("Combined Pattern Rules")
     class CombinedPatternRulesTests {
 

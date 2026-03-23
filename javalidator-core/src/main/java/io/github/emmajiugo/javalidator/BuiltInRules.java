@@ -64,12 +64,18 @@ final class BuiltInRules {
 
                 // Control flow rules
                 new NullableRule(),
+                new BailRule(),
 
                 // String format rules
                 new DigitsRule(),
 
                 // Array/Collection rules
-                new DistinctRule()
+                new DistinctRule(),
+
+                // Inverse/prefix/suffix rules
+                new NotInRule(),
+                new StartsWithRule(),
+                new EndsWithRule()
         );
     }
 }

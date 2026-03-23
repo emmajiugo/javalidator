@@ -1,11 +1,15 @@
 package io.github.emmajiugo.javalidator.rules;
 
+import io.github.emmajiugo.javalidator.Validator;
 import io.github.emmajiugo.javalidator.annotations.Rule;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
+
 import static io.github.emmajiugo.javalidator.rules.ValidationTestHelper.assertValidation;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Tests for basic validation rules: required, min, max, email, size, in
@@ -35,7 +39,8 @@ class BasicValidationRulesTest {
             assertValidation(new RequiredField(null))
                     .hasSingleError()
                     .hasErrorOn("username")
-                    .withMessageContaining("required");
+                    .withMessageContaining("required")
+                    .hasRule("required");
         }
 
         @Test
@@ -77,7 +82,8 @@ class BasicValidationRulesTest {
             assertValidation(new MinLengthField("ab"))
                     .hasSingleError()
                     .hasErrorOn("username")
-                    .withMessageContaining("at least 3");
+                    .withMessageContaining("at least 3")
+                    .hasRule("min");
         }
 
         @Test
@@ -152,7 +158,8 @@ class BasicValidationRulesTest {
             assertValidation(new EmailField("invalid"))
                     .hasSingleError()
                     .hasErrorOn("email")
-                    .withMessageContaining("email");
+                    .withMessageContaining("email")
+                    .hasRule("email");
 
             assertValidation(new EmailField("@example.com"))
                     .hasSingleError();
@@ -166,6 +173,24 @@ class BasicValidationRulesTest {
         void shouldPassWithNullValue() {
             assertValidation(new EmailField(null))
                     .isValid();
+        }
+
+        @Test
+        @DisplayName("should reject leading dot in local part")
+        void shouldRejectLeadingDot() {
+            assertValidation(new EmailField(".user@example.com")).hasSingleError();
+        }
+
+        @Test
+        @DisplayName("should reject trailing dot in local part")
+        void shouldRejectTrailingDot() {
+            assertValidation(new EmailField("user.@example.com")).hasSingleError();
+        }
+
+        @Test
+        @DisplayName("should reject consecutive dots in local part")
+        void shouldRejectConsecutiveDots() {
+            assertValidation(new EmailField("user..name@example.com")).hasSingleError();
         }
     }
 
@@ -214,6 +239,11 @@ class BasicValidationRulesTest {
                 String status
         ) {}
 
+        record InField(
+                @Rule("in:active,inactive,pending")
+                String status
+        ) {}
+
         @Test
         @DisplayName("should pass with valid values")
         void shouldPassWithValidValues() {
@@ -235,12 +265,150 @@ class BasicValidationRulesTest {
         }
 
         @Test
-        @DisplayName("should fail with null value")
-        void shouldFailWithNullValue() {
-            // The 'in' rule currently validates null as invalid
-            assertValidation(new StatusField(null))
+        @DisplayName("should pass with null value (let required handle nulls)")
+        void shouldPassWithNullValue() {
+            assertValidation(new InField(null))
+                    .isValid();
+        }
+    }
+
+    @Nested
+    @DisplayName("Min Rule — Collections")
+    class MinRuleCollectionTests {
+
+        record MinListField(
+                @Rule("min:2")
+                List<String> tags
+        ) {}
+
+        record MinArrayField(
+                @Rule("min:2")
+                String[] items
+        ) {}
+
+        record MinNumberField(
+                @Rule("min:5")
+                Integer count
+        ) {}
+
+        @Test
+        @DisplayName("should pass when list size meets minimum")
+        void shouldPassWhenListSizeMeetsMinimum() {
+            assertValidation(new MinListField(List.of("a", "b")))
+                    .isValid();
+            assertValidation(new MinListField(List.of("a", "b", "c")))
+                    .isValid();
+        }
+
+        @Test
+        @DisplayName("should fail when list size is below minimum")
+        void shouldFailWhenListSizeBelowMinimum() {
+            assertValidation(new MinListField(List.of("a")))
                     .hasSingleError()
-                    .hasErrorOn("status");
+                    .hasErrorOn("tags")
+                    .withMessageContaining("at least 2 items");
+        }
+
+        @Test
+        @DisplayName("should pass when array length meets minimum")
+        void shouldPassWhenArrayLengthMeetsMinimum() {
+            assertValidation(new MinArrayField(new String[]{"x", "y"}))
+                    .isValid();
+        }
+
+        @Test
+        @DisplayName("should fail when array length is below minimum")
+        void shouldFailWhenArrayLengthBelowMinimum() {
+            assertValidation(new MinArrayField(new String[]{"x"}))
+                    .hasSingleError()
+                    .hasErrorOn("items")
+                    .withMessageContaining("at least 2 items");
+        }
+
+        @Test
+        @DisplayName("should return helpful message for Number type")
+        void shouldReturnHelpfulMessageForNumber() {
+            assertValidation(new MinNumberField(3))
+                    .hasSingleError()
+                    .hasErrorOn("count")
+                    .withMessageContaining("gte");
+        }
+
+        @Test
+        @DisplayName("should pass with null value")
+        void shouldPassWithNullValue() {
+            assertValidation(new MinListField(null))
+                    .isValid();
+        }
+    }
+
+    @Nested
+    @DisplayName("Max Rule — Collections")
+    class MaxRuleCollectionTests {
+
+        record MaxListField(
+                @Rule("max:3")
+                List<String> tags
+        ) {}
+
+        record MaxArrayField(
+                @Rule("max:3")
+                String[] items
+        ) {}
+
+        record MaxNumberField(
+                @Rule("max:10")
+                Integer count
+        ) {}
+
+        @Test
+        @DisplayName("should pass when list size is within maximum")
+        void shouldPassWhenListSizeWithinMaximum() {
+            assertValidation(new MaxListField(List.of("a", "b", "c")))
+                    .isValid();
+            assertValidation(new MaxListField(List.of("a")))
+                    .isValid();
+        }
+
+        @Test
+        @DisplayName("should fail when list size exceeds maximum")
+        void shouldFailWhenListSizeExceedsMaximum() {
+            assertValidation(new MaxListField(List.of("a", "b", "c", "d")))
+                    .hasSingleError()
+                    .hasErrorOn("tags")
+                    .withMessageContaining("more than 3 items");
+        }
+
+        @Test
+        @DisplayName("should pass when array length is within maximum")
+        void shouldPassWhenArrayLengthWithinMaximum() {
+            assertValidation(new MaxArrayField(new String[]{"x", "y"}))
+                    .isValid();
+        }
+
+        @Test
+        @DisplayName("should fail when array length exceeds maximum")
+        void shouldFailWhenArrayLengthExceedsMaximum() {
+            assertValidation(new MaxArrayField(new String[]{"x", "y", "z", "w"}))
+                    .hasSingleError()
+                    .hasErrorOn("items")
+                    .withMessageContaining("more than 3 items");
+        }
+
+        @Test
+        @DisplayName("should return helpful message for Number type")
+        void shouldReturnHelpfulMessageForNumber() {
+            assertValidation(new MaxNumberField(15))
+                    .hasSingleError()
+                    .hasErrorOn("count")
+                    .withMessageContaining("lte");
+        }
+
+        @Test
+        @DisplayName("should pass with null value")
+        void shouldPassWithNullValue() {
+            assertValidation(new MaxListField(null))
+                    .isValid();
         }
     }
 
@@ -301,6 +469,28 @@ class BasicValidationRulesTest {
             assertValidation(new UserWithCustomMessages("john", "invalid"))
                     .hasErrorOn("email")
                     .withMessage("Please provide a valid email address");
+        }
+    }
+
+    @Nested
+    @DisplayName("Rules Field Enrichment")
+    class RulesFieldTests {
+
+        record MultiRuleField(
+                @Rule(value = "required|min:3", message = "Field is invalid")
+                String name
+        ) {}
+
+        @Test
+        @DisplayName("should populate rules even with custom message")
+        void shouldPopulateRulesWithCustomMessage() {
+            var response = Validator.validate(new MultiRuleField(""));
+            assertThat(response.valid()).isFalse();
+            var error = response.errors().get(0);
+            // Custom message used once
+            assertThat(error.messages()).containsExactly("Field is invalid");
+            // But rules captures all failed rule names
+            assertThat(error.rules()).contains("required", "min");
         }
     }
 }

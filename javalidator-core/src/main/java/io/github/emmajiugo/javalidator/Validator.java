@@ -15,6 +15,7 @@ import java.lang.reflect.RecordComponent;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Main validation entry point for validating objects using annotation-based rules.
@@ -99,7 +100,7 @@ public final class Validator {
 
         if (dto == null) {
             return ValidationResponse.failure(List.of(
-                    new ValidationError("object", List.of("Validation object cannot be null"))
+                    new ValidationError("object", List.of("Validation object cannot be null"), List.of("required"))
             ));
         }
 
@@ -160,7 +161,9 @@ public final class Validator {
         }
 
         List<String> errors = new ArrayList<>();
+        List<String> ruleNames = new ArrayList<>();
         String[] ruleDefinitions = rules.split("\\|");
+        boolean bailOnFailure = false;
 
         for (String ruleDefinition : ruleDefinitions) {
             String trimmed = ruleDefinition.trim();
@@ -170,6 +173,11 @@ public final class Validator {
 
             RuleDefinition parsed = RuleDefinition.parse(trimmed);
             ValidationRule rule = RuleRegistry.getRequiredRule(parsed.name());
+
+            if (rule instanceof FlowControlRule) {
+                bailOnFailure = true;
+                continue;
+            }
 
             // Conditional rules require DTO context - not supported for single value validation
             // These are unsupported operations, not configuration errors - always throw
@@ -191,6 +199,8 @@ public final class Validator {
                 String error = rule.validate(fieldName, value, parsed.parameter());
                 if (error != null) {
                     errors.add(error);
+                    ruleNames.add(parsed.name());
+                    if (bailOnFailure) break;
                 }
             } catch (IllegalArgumentException e) {
                 // Configuration error detected (e.g., missing parameter, invalid rule)
@@ -200,6 +210,8 @@ public final class Validator {
                 } else {
                     // Graceful mode: convert to validation error to prevent crashes
                     errors.add("[CONFIG ERROR] " + e.getMessage());
+                    ruleNames.add(parsed.name());
+                    if (bailOnFailure) break;
                 }
             }
         }
@@ -208,7 +220,7 @@ public final class Validator {
             return ValidationResponse.success();
         }
 
-        return ValidationResponse.failure(List.of(new ValidationError(fieldName, errors)));
+        return ValidationResponse.failure(List.of(new ValidationError(fieldName, errors, ruleNames)));
     }
 
     /**
@@ -231,6 +243,101 @@ public final class Validator {
         }
     }
 
+    /**
+     * Validates a Map's entries against the specified rules.
+     *
+     * <p>This method enables programmatic validation of Map data using the same
+     * pipe-separated rule syntax. Nested map values can be accessed using
+     * dot-notation paths (e.g., "address.city").
+     *
+     * <p>Example:
+     * <pre>{@code
+     * ValidationResponse response = Validator.validateMap(body, Map.of(
+     *     "title", "required|min:3",
+     *     "address.city", "required",
+     *     "address.zip", "required|digits:5"
+     * ));
+     * }</pre>
+     *
+     * <p><strong>Note:</strong> Conditional rules (like {@code required_if}, {@code same},
+     * {@code different}) and the {@code enum} rule cannot be used with this method —
+     * same restrictions as {@link #validateValue(Object, String, String)}.
+     *
+     * @param data  the map to validate (supports nested maps via dot-notation keys)
+     * @param rules map of field paths to pipe-separated rule strings
+     * @return a ValidationResponse containing validation results
+     * @throws IllegalArgumentException if a conditional rule or enum rule is used
+     */
+    public static ValidationResponse validateMap(Map<String, ?> data, Map<String, String> rules) {
+        ensureInitialized();
+
+        if (data == null) {
+            return ValidationResponse.failure(List.of(
+                    new ValidationError("data", List.of("Validation data cannot be null"), List.of("required"))
+            ));
+        }
+
+        if (rules == null || rules.isEmpty()) {
+            return ValidationResponse.success();
+        }
+
+        List<ValidationError> errors = new ArrayList<>();
+
+        for (Map.Entry<String, String> entry : rules.entrySet()) {
+            String fieldPath = entry.getKey();
+            if (fieldPath == null || fieldPath.isBlank()) {
+                continue;
+            }
+            String ruleString = entry.getValue();
+
+            Object value = resolveMapValue(data, fieldPath);
+
+            ValidationResponse response = validateValue(value, ruleString, fieldPath);
+            if (!response.valid()) {
+                errors.addAll(response.errors());
+            }
+        }
+
+        return errors.isEmpty()
+                ? ValidationResponse.success()
+                : ValidationResponse.failure(errors);
+    }
+
+    /**
+     * Validates a Map and throws an exception if validation fails.
+     *
+     * @param data  the map to validate
+     * @param rules map of field paths to pipe-separated rule strings
+     * @throws NotValidException if validation fails
+     * @see #validateMap(Map, Map)
+     */
+    public static void validateMapOrThrow(Map<String, ?> data, Map<String, String> rules) {
+        ValidationResponse response = validateMap(data, rules);
+        if (!response.valid()) {
+            throw new NotValidException("Map validation failed", response.errors());
+        }
+    }
+
+    /**
+     * Resolves a value from a possibly-nested map using dot-notation path.
+     *
+     * @param data the map to resolve from
+     * @param path dot-separated path (e.g., "address.city")
+     * @return the resolved value, or null if any segment is missing or not a Map
+     */
+    private static Object resolveMapValue(Map<String, ?> data, String path) {
+        String[] segments = path.split("\\.");
+        Object current = data;
+        for (String segment : segments) {
+            if (current instanceof Map<?, ?> map) {
+                current = map.get(segment);
+            } else {
+                return null;
+            }
+        }
+        return current;
+    }
+
     private static List<ValidationError> validateRecord(Object dto, Class<?> clazz) {
         List<ValidationError> errors = new ArrayList<>();
 
@@ -238,9 +345,9 @@ public final class Validator {
             String fieldName = component.getName();
             Object value = ReflectionUtils.getRecordComponentValue(dto, component);
 
-            List<String> fieldErrors = validateAnnotatedElement(fieldName, value, component, dto);
-            if (!fieldErrors.isEmpty()) {
-                errors.add(new ValidationError(fieldName, fieldErrors));
+            ValidationError fieldError = validateAnnotatedElement(fieldName, value, component, dto);
+            if (fieldError != null) {
+                errors.add(fieldError);
             }
         }
 
@@ -256,50 +363,90 @@ public final class Validator {
             String fieldName = field.getName();
             Object value = ReflectionUtils.getFieldValue(dto, field);
 
-            List<String> fieldErrors = validateAnnotatedElement(fieldName, value, field, dto);
-            if (!fieldErrors.isEmpty()) {
-                errors.add(new ValidationError(fieldName, fieldErrors));
+            ValidationError fieldError = validateAnnotatedElement(fieldName, value, field, dto);
+            if (fieldError != null) {
+                errors.add(fieldError);
             }
         }
 
         return errors;
     }
 
-    private static List<String> validateAnnotatedElement(
+    private static ValidationError validateAnnotatedElement(
             String fieldName, Object value, AnnotatedElement element, Object dto) {
 
-        List<String> errors = new ArrayList<>();
+        List<String> allMessages = new ArrayList<>();
+        List<String> allRuleNames = new ArrayList<>();
 
         // Process all @Rule annotations
         for (Rule ruleAnnotation : element.getAnnotationsByType(Rule.class)) {
-            errors.addAll(processRuleAnnotation(fieldName, value, ruleAnnotation, dto));
+            List<RuleResult> results = processRuleAnnotation(fieldName, value, ruleAnnotation, dto);
+
+            if (!results.isEmpty()) {
+                if (!ruleAnnotation.message().isEmpty()) {
+                    // Custom message: add the message once, but collect ALL failed rule names
+                    allMessages.add(ruleAnnotation.message());
+                    for (RuleResult result : results) {
+                        allRuleNames.add(result.ruleName());
+                    }
+                } else {
+                    // Default messages: add each message with its rule name
+                    for (RuleResult result : results) {
+                        allMessages.add(result.errorMessage());
+                        allRuleNames.add(result.ruleName());
+                    }
+                }
+            }
         }
 
         // Process @RuleCascade for nested validation
         if (element.isAnnotationPresent(RuleCascade.class)) {
-            errors.addAll(validateCascade(fieldName, value));
-        }
-
-        return errors;
-    }
-
-    private static List<String> processRuleAnnotation(
-            String fieldName, Object value, Rule ruleAnnotation, Object dto) {
-
-        List<String> errors = new ArrayList<>();
-        String[] ruleDefinitions = ruleAnnotation.value().split("\\|");
-
-        for (String ruleDefinition : ruleDefinitions) {
-            String error = applyRule(fieldName, value, ruleDefinition.trim(), ruleAnnotation, dto);
-            if (error != null) {
-                errors.add(error);
+            List<String> cascadeErrors = validateCascade(fieldName, value);
+            for (String cascadeError : cascadeErrors) {
+                allMessages.add(cascadeError);
+                allRuleNames.add("cascade");
             }
         }
 
-        return errors;
+        if (allMessages.isEmpty()) {
+            return null;
+        }
+
+        return new ValidationError(fieldName, allMessages, allRuleNames);
     }
 
-    private static String applyRule(
+    private static List<RuleResult> processRuleAnnotation(
+            String fieldName, Object value, Rule ruleAnnotation, Object dto) {
+
+        List<RuleResult> results = new ArrayList<>();
+        String[] ruleDefinitions = ruleAnnotation.value().split("\\|");
+        boolean bailOnFailure = false;
+
+        for (String ruleDefinition : ruleDefinitions) {
+            String trimmed = ruleDefinition.trim();
+
+            try {
+                RuleDefinition parsed = RuleDefinition.parse(trimmed);
+                ValidationRule rule = RuleRegistry.getRequiredRule(parsed.name());
+                if (rule instanceof FlowControlRule) {
+                    bailOnFailure = true;
+                    continue;
+                }
+            } catch (IllegalArgumentException e) {
+                // Fall through to applyRule which handles graceful/strict mode
+            }
+
+            RuleResult result = applyRule(fieldName, value, trimmed, ruleAnnotation, dto);
+            if (result != null) {
+                results.add(result);
+                if (bailOnFailure) break;
+            }
+        }
+
+        return results;
+    }
+
+    private static RuleResult applyRule(
             String fieldName, Object value, String ruleDefinition, Rule ruleAnnotation, Object dto) {
 
         try {
@@ -308,12 +455,11 @@ public final class Validator {
 
             String error = executeRule(rule, fieldName, value, parsed.parameter(), ruleAnnotation, dto);
 
-            // Return custom message if provided
-            if (error != null && !ruleAnnotation.message().isEmpty()) {
-                return ruleAnnotation.message();
+            if (error != null) {
+                return new RuleResult(parsed.name(), error);
             }
 
-            return error;
+            return null;
         } catch (IllegalArgumentException e) {
             // Configuration error detected (e.g., missing parameter, invalid rule)
             if (config.isStrictMode()) {
@@ -321,7 +467,7 @@ public final class Validator {
                 throw e;
             } else {
                 // Graceful mode: convert to validation error to prevent crashes
-                return "[CONFIG ERROR] " + e.getMessage();
+                return new RuleResult("unknown", "[CONFIG ERROR] " + e.getMessage());
             }
         }
     }

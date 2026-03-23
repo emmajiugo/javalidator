@@ -20,19 +20,19 @@ public class LtRule implements ValidationRule {
             throw new IllegalArgumentException("Lt rule requires a parameter (e.g., 'lt:100')");
         }
 
-        int max = Integer.parseInt(parameter);
+        double max = Double.parseDouble(parameter);
 
-        // Convert value to integer
-        int numericValue;
+        // Convert value to double
+        double numericValue;
         if (value instanceof Number n) {
-            numericValue = n.intValue();
+            numericValue = n.doubleValue();
         } else if (value instanceof String s) {
             try {
-                numericValue = Integer.parseInt(s);
+                numericValue = Double.parseDouble(s);
             } catch (NumberFormatException e) {
                 return String.format(
-                        "The %s value must be a valid number to use 'lt:%d' validation.",
-                        fieldName, max
+                        "The %s value must be a valid number to use 'lt:%s' validation.",
+                        fieldName, formatNumber(max)
                 );
             }
         } else {
@@ -43,9 +43,16 @@ public class LtRule implements ValidationRule {
 
         // Single validation check
         if (numericValue >= max) {
-            return String.format("The %s must be less than %d.", fieldName, max);
+            return String.format("The %s must be less than %s.", fieldName, formatNumber(max));
         }
 
         return null;
+    }
+
+    private String formatNumber(double value) {
+        if (value == Math.floor(value) && !Double.isInfinite(value)) {
+            return String.valueOf((long) value);
+        }
+        return String.valueOf(value);
     }
 }

@@ -21,7 +21,7 @@
         <dependency>
             <groupId>io.github.emmajiugo</groupId>
             <artifactId>javalidator-core</artifactId>
-            <version>0.6.2</version>
+            <version>1.0.0</version>
         </dependency>
     </dependencies>
 
