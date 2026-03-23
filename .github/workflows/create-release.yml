@@ -101,7 +101,7 @@ jobs:
       - name: Commit version update
         run: |
           git add pom.xml javalidator-core/pom.xml javalidator-spring/pom.xml examples/*/pom.xml
-          git commit -m "chore: bump version to ${{ steps.version.outputs.version }}"
+          git diff --staged --quiet && echo "No version changes to commit" || git commit -m "chore: bump version to ${{ steps.version.outputs.version }}"
           git push
 
       - name: Create and push tag
